@@ -1,0 +1,199 @@
+﻿@model IEnumerable<BookingSportsField.ViewModels.FacilityCardViewModel>
+
+@{
+    ViewData["Title"] = "Danh sách cơ sở";
+    var favoriteFacilities = ViewBag.Favorites as List<BookingSportsField.ViewModels.FacilityCardViewModel>;
+    var featuredFacilities = ViewBag.FeaturedFacilities as List<BookingSportsField.ViewModels.FacilityCardViewModel>;
+    var aiFacilities = ViewBag.AIRecommendations
+        as List<BookingSportsField.ViewModels.FacilityRecommendationVM>;
+}
+
+<style>
+    .hero {
+        background: url('/images/banner1.jpg') center/cover no-repeat;
+        color: white;
+        padding: 100px 0;
+        text-align: center;
+        position: relative;
+    }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+    .hero-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .facility-card {
+        border-radius: 0.75rem;
+        transition: transform 0.3s;
+    }
+
+        .facility-card:hover {
+            transform: translateY(-5px);
+        }
+</style>
+
+<div class="container mt-5" id="search">
+    <div class="hero">
+        <div class="hero-content container">
+            <h1 class="display-4 fw-bold">Đặt sân nhanh chóng, tiện lợi</h1>
+            <p class="lead">Tìm kiếm, so sánh và đặt sân thể thao chỉ trong vài phút</p>
+            <a href="#search" class="btn btn-success btn-lg mt-3">Khám phá ngay</a>
+        </div>
+    </div>
+    <!-- Thanh tìm kiếm -->
+    <form method="get" asp-action="Index" class="input-group mb-5 mt-5 shadow-sm">
+        <input type="text" name="searchTerm" class="form-control py-3" placeholder="Nhập tên hoặc địa chỉ cơ sở..." value="@Context.Request.Query["searchTerm"]" />
+        <button class="btn btn-success px-4" type="submit"><i class="bi bi-search"></i> Tìm kiếm</button>
+    </form>
+    @if (aiFacilities != null && aiFacilities.Any())
+    {
+        <h3 class="fw-bold text-success mb-4">
+            ✨ Gợi ý dành cho bạn <span class="badge bg-warning text-dark">AI</span>
+        </h3>
+
+        <div class="row g-4 mb-5">
+            @foreach (var f in aiFacilities)
+            {
+                <div class="col-md-4">
+                    <div class="card shadow h-100">
+                        <div class="card-body">
+                            <h5 class="fw-bold">@f.FacilityName</h5>
+
+                            <p class="text-muted small">
+                                ⭐ Điểm AI: @f.Score <br />
+                                🏟 Sân đề xuất: @f.BestFieldName <br />
+                                ⏰ @f.RecommendedStart - @f.RecommendedEnd
+                            </p>
+
+                            <a href="@Url.Action("Booking", "Home", new { id = f.FacilityId })"
+                               class="btn btn-success w-100">
+                                Đặt ngay
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    @if (favoriteFacilities != null && favoriteFacilities.Any())
+    {
+        <h3 class="fw-bold text-success mb-4">Cơ sở yêu thích</h3>
+        <div class="row g-4 mb-5">
+            @foreach (var facility in favoriteFacilities)
+            {
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-lg h-100 facility-card position-relative overflow-hidden animate__animated animate__fadeInUp">
+                        <div class="overflow-hidden">
+                            <img src="@facility.ImageUrl" class="card-img-top img-hover-zoom" style="height: 220px; object-fit: cover; transition: transform 0.4s;" />
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold text-dark">@facility.Name</h5>
+                            <p class="card-text text-muted small">
+                                <i class="bi bi-geo-alt-fill text-danger"></i> @facility.Address<br />
+                                <i class="bi bi-clock-fill text-primary"></i> Giờ mở cửa: @facility.OpeningTime - @facility.ClosingTime<br />
+                                <i class="bi bi-star-fill text-warning"></i> @facility.AverageRating.ToString("0.0") / 5.0
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <button class="btn rounded-circle p-2 bg-transparent text-danger border-0" id="favorite-@facility.Id" onclick="toggleFavorite(@facility.Id)">
+                                    <i class="fa@((facility.IsFavorite) ? "-solid" : "-regular") fa-heart text-danger" style="font-size: 1.5rem;"></i>
+                                </button>
+                                <a href="@Url.Action("Booking", "Home", new { id = facility.Id })" class="btn btn-success px-3"><i class="fa fa-eye"></i> Xem chi tiết</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    @if (featuredFacilities != null && featuredFacilities.Any())
+    {
+        <h3 class="fw-bold text-success mb-4">Cơ sở nổi bật</h3>
+        <div class="row g-4 mb-5">
+            @foreach (var facility in featuredFacilities)
+            {
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-lg h-100 facility-card position-relative overflow-hidden animate__animated animate__fadeInUp">
+                        <div class="overflow-hidden">
+                            <img src="@facility.ImageUrl" class="card-img-top img-hover-zoom" style="height: 220px; object-fit: cover; transition: transform 0.4s;" />
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold text-dark">@facility.Name</h5>
+                            <p class="card-text text-muted small">
+                                <i class="bi bi-geo-alt-fill text-danger"></i> @facility.Address<br />
+                                <i class="bi bi-clock-fill text-primary"></i> Giờ mở cửa: @facility.OpeningHours<br />
+                                <i class="bi bi-star-fill text-warning"></i> @facility.AverageRating.ToString("0.0") / 5.0
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <button class="btn rounded-circle p-2 bg-transparent text-danger border-0" id="favorite-@facility.Id" onclick="toggleFavorite(@facility.Id)">
+                                    <i class="fa@((facility.IsFavorite) ? "-solid" : "-regular") fa-heart text-danger" style="font-size: 1.5rem;"></i>
+                                </button>
+                                <a href="@Url.Action("Booking", "Home", new { id = facility.Id })" class="btn btn-success px-3"><i class="fa fa-eye"></i> Xem chi tiết</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    <h3 class="fw-bold text-success mb-4">Tất cả cơ sở</h3>
+    <div class="row g-4">
+        @foreach (var facility in Model)
+        {
+            <div class="col-md-4">
+                <div class="card border-0 shadow-lg h-100 facility-card position-relative overflow-hidden animate__animated animate__fadeInUp">
+                    <div class="overflow-hidden">
+                        <img src="@facility.ImageUrl" class="card-img-top img-hover-zoom" style="height: 220px; object-fit: cover; transition: transform 0.4s;" />
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold text-dark">@facility.Name</h5>
+                        <p class="card-text text-muted small">
+                            <i class="bi bi-geo-alt-fill text-danger"></i> @facility.Address<br />
+                            <i class="bi bi-clock-fill text-primary"></i> Giờ mở cửa: @facility.OpeningHours<br />
+                            <i class="bi bi-star-fill text-warning"></i> @facility.AverageRating.ToString("0.0") / 5.0
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <button class="btn rounded-circle p-2 bg-transparent text-danger border-0" id="favorite-@facility.Id" onclick="toggleFavorite(@facility.Id)">
+                                <i class="fa@((facility.IsFavorite) ? "-solid" : "-regular") fa-heart text-danger" style="font-size: 1.5rem;"></i>
+                            </button>
+                            <a href="@Url.Action("Booking", "Home", new { id = facility.Id })" class="btn btn-success px-3"><i class="fa fa-eye"></i> Xem chi tiết</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+<script>
+    function toggleFavorite(facilityId) {
+        var button = document.getElementById("favorite-" + facilityId);
+        var icon = button.querySelector("i");
+
+        $.ajax({
+            url: '/Home/ToggleFavorite',
+            type: 'POST',
+            data: { facilityId: facilityId },
+            success: function (data) {
+                if (data.isFavorite) {
+                    icon.classList.remove('bi-heart');
+                    icon.classList.add('bi-heart-fill');
+                } else {
+                    icon.classList.remove('bi-heart-fill');
+                    icon.classList.add('bi-heart');
+                }
+            },
+            error: function () {
+                alert("Có lỗi xảy ra khi thay đổi trạng thái yêu thích.");
+            }
+        });
+    }
+</script>

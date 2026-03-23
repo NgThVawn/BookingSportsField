@@ -1,0 +1,145 @@
+@{
+    ViewData["Title"] = "Test SignalR";
+}
+
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h3>🔔 Test SignalR Connection</h3>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <label class="form-label"><strong>Connection Status:</strong></label>
+                <div id="connectionStatus" class="alert alert-warning">Đang kết nối...</div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label"><strong>User Role:</strong></label>
+                <div id="userRole" class="alert alert-info">@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label"><strong>User ID:</strong></label>
+                <div id="userId" class="alert alert-info">@User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value</div>
+            </div>
+
+            <hr />
+
+            <h4>Send Test Notification</h4>
+            <div class="mb-3">
+                <label for="testMessage" class="form-label">Message:</label>
+                <input type="text" id="testMessage" class="form-control" value="🧪 Test notification from SignalR" />
+            </div>
+
+            <button id="sendToSelf" class="btn btn-success">Send to Self</button>
+            <button id="sendToAdmin" class="btn btn-warning">Send to Admin Group</button>
+            <button id="sendToFieldOwner" class="btn btn-info">Send to FieldOwner Group</button>
+
+            <hr />
+
+            <h4>Received Messages</h4>
+            <div id="messagesList" class="list-group"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <script>
+        const statusDiv = document.getElementById("connectionStatus");
+        const messagesList = document.getElementById("messagesList");
+
+        // Build SignalR connection
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/bookingHub")
+            .withAutomaticReconnect()
+            .configureLogging(signalR.LogLevel.Debug)
+            .build();
+
+        // Connection events
+        connection.start()
+            .then(() => {
+                statusDiv.className = "alert alert-success";
+                statusDiv.textContent = "✅ Connected successfully!";
+                console.log("✅ SignalR connected");
+
+                const role = document.body.dataset.role;
+                if (role) {
+                    console.log("🔹 Attempting to join role group:", role);
+                    connection.invoke("JoinRoleGroup", role)
+                        .then(() => console.log("✅ Joined role group:", role))
+                        .catch(err => console.error("❌ Failed to join role group:", err));
+                }
+            })
+            .catch(err => {
+                statusDiv.className = "alert alert-danger";
+                statusDiv.textContent = "❌ Connection failed: " + err;
+                console.error("❌ SignalR connection error:", err);
+            });
+
+        connection.onreconnecting(() => {
+            statusDiv.className = "alert alert-warning";
+            statusDiv.textContent = "🔄 Reconnecting...";
+        });
+
+        connection.onreconnected(() => {
+            statusDiv.className = "alert alert-success";
+            statusDiv.textContent = "✅ Reconnected!";
+            const role = document.body.dataset.role;
+            if (role) {
+                connection.invoke("JoinRoleGroup", role)
+                    .catch(err => console.error("❌ Failed to rejoin:", err));
+            }
+        });
+
+        connection.onclose(() => {
+            statusDiv.className = "alert alert-danger";
+            statusDiv.textContent = "❌ Connection closed. Attempting restart...";
+            setTimeout(() => connection.start().catch(err => console.error("❌ Restart failed:", err)), 1000);
+        });
+
+        // Listen for notifications
+        connection.on("ReceiveNotification", function (message) {
+            console.log("📬 Received:", message);
+            const item = document.createElement("div");
+            item.className = "list-group-item list-group-item-action";
+            item.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+            messagesList.insertBefore(item, messagesList.firstChild);
+        });
+
+        // Send buttons
+        document.getElementById("sendToSelf").addEventListener("click", async () => {
+            const msg = document.getElementById("testMessage").value;
+            const userId = document.getElementById("userId").textContent.trim();
+            try {
+                await connection.invoke("NotifyUser", userId, msg);
+                console.log("✅ Sent to self:", userId);
+            } catch (err) {
+                console.error("❌ Send failed:", err);
+                alert("Failed: " + err);
+            }
+        });
+
+        document.getElementById("sendToAdmin").addEventListener("click", async () => {
+            const msg = document.getElementById("testMessage").value;
+            try {
+                await connection.invoke("NotifyGroup", "Admin", msg);
+                console.log("✅ Sent to Admin group");
+            } catch (err) {
+                console.error("❌ Send failed:", err);
+                alert("Failed: " + err);
+            }
+        });
+
+        document.getElementById("sendToFieldOwner").addEventListener("click", async () => {
+            const msg = document.getElementById("testMessage").value;
+            try {
+                await connection.invoke("NotifyGroup", "FieldOwner", msg);
+                console.log("✅ Sent to FieldOwner group");
+            } catch (err) {
+                console.error("❌ Send failed:", err);
+                alert("Failed: " + err);
+            }
+        });
+    </script>
+}

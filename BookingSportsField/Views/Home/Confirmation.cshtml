@@ -1,0 +1,70 @@
+﻿@model BookingSportsField.Models.Booking
+
+@{
+    ViewData["Title"] = "Đặt sân thành công";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-success text-white text-center">
+                    <h4 class="mb-0">
+                        <i class="bi bi-check-circle-fill me-2"></i>Đặt sân thành công
+                    </h4>
+                </div>
+
+                <div class="card-body">
+                    <div class="alert alert-warning text-center fw-semibold">
+                        Đơn đặt sân đang chờ <strong>chủ sân xác nhận</strong>
+                    </div>
+
+                    <h5 class="text-secondary mb-3">Thông tin đặt sân</h5>
+                    <ul class="list-group list-group-flush mb-3">
+                        <li class="list-group-item">
+                            <strong>Cơ sở:</strong> @Model.Field.Facility.Name
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Địa chỉ:</strong> @Model.Field.Facility.Address
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Sân:</strong> @Model.Field.Name (@Model.Field.Type)
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Loại sân: </strong>@Model.Field.Type.GetDisplayName()
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Thời gian:</strong>
+                            @Model.BookingDate.ToString("dd/MM/yyyy")
+                            từ @Model.StartTime.ToString(@"hh\:mm") đến @Model.EndTime.ToString(@"hh\:mm")
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Tổng tiền:</strong>
+                            <span class="text-danger fw-bold">@Model.TotalPrice.ToString("N0") VND</span>
+                        </li>
+                    </ul>
+
+                    <div class="alert alert-success mt-4" role="alert">
+                        <i class="bi bi-cash-stack me-2"></i>
+                        Bạn đã chọn hình thức <strong>thanh toán khi đến sân (COD)</strong>.<br />
+                        Vui lòng đến đúng giờ và thanh toán tại cơ sở.
+                    </div>
+
+                    <p class="text-muted mt-3 text-center">
+                        Chúng tôi sẽ gửi thông báo qua email hoặc hệ thống khi chủ sân xác nhận đơn của bạn.
+                    </p>
+                </div>
+
+                <div class="card-footer text-center">
+                    <a href="@Url.Action("Index", "Home")" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left-circle me-1"></i>Quay lại trang chủ
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+}

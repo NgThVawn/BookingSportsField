@@ -1,0 +1,1310 @@
+﻿@model IEnumerable<BookingSportsField.Models.Booking>
+
+@{
+    ViewData["Title"] = "Trạng thái sân";
+}
+
+<style>
+    .filter-container {
+        background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .filter-container h2 {
+        color: white;
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
+
+    .filter-box {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        align-items: flex-end;
+    }
+
+    .filter-box .form-group {
+        margin-bottom: 0;
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .filter-box label {
+        color: white;
+        font-weight: 500;
+        margin-bottom: 5px;
+        display: block;
+        font-size: 14px;
+    }
+
+    .filter-box select,
+    .filter-box input {
+        border: none;
+        border-radius: 4px;
+        padding: 10px 12px;
+        font-size: 14px;
+        width: 100%;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .filter-box select:focus,
+    .filter-box input:focus {
+        outline: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .legend-container {
+        background: white;
+        padding: 15px 20px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .legend-badge {
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        color: white;
+    }
+
+    .badge-trống {
+        background-color: #f0f0f0;
+        color: #333;
+    }
+
+    .badge-đã-cọc-sân {
+        background-color: #3498db;
+        color: white;
+    }
+
+    .badge-lịch-ngày {
+        background-color: #27ae60;
+        color: white;
+    }
+
+    .badge-lịch-linh-hoạt {
+        background-color: #f39c12;
+        color: white;
+    }
+
+    .badge-chờ-kh-cọc {
+        background-color: #e74c3c;
+        color: white;
+    }
+
+    .badge-khóa {
+        background-color: #95a5a6;
+        color: white;
+    }
+
+    .badge-chưa-t-t-dịch-vụ {
+        background-color: #f1c40f;
+        color: #333;
+    }
+
+    .schedule-container {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .schedule-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+
+    .schedule-table th {
+        background-color: #2c3e50;
+        color: white;
+        padding: 8px;
+        text-align: left;
+        font-weight: 600;
+        border-right: 1px solid #34495e;
+    }
+
+    .schedule-table th:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 10;
+        width: auto;
+        min-width: 100px;
+        background-color: #2c3e50;
+    }
+
+    .schedule-table td {
+        border: 1px solid #ecf0f1;
+        padding: 8px;
+        height: 70px;
+        width: auto;
+        min-width: 80px;
+        position: relative;
+        vertical-align: middle;
+        word-break: break-word;
+        font-size: 13px;
+    }
+
+    .schedule-table tbody tr:nth-child(odd) {
+        background-color: #f8f9fa;
+    }
+
+    .schedule-table tbody tr:hover {
+        background-color: #f0f0f0;
+    }
+
+    .field-name-cell {
+        position: sticky;
+        left: 0;
+        z-index: 9;
+        font-weight: 600;
+        background-color: inherit;
+        width: auto;
+        min-width: 100px;
+        border-right: 2px solid #bdc3c7;
+        font-size: 13px;
+    }
+
+    .time-header {
+        text-align: center;
+        width: auto;
+        min-width: 80px;
+        font-weight: 600;
+        font-size: 13px;
+    }
+
+    .booking-slot {
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        padding: 8px;
+        border-radius: 5px;
+        font-weight: 500;
+        font-size: 13px;
+        line-height: 1.4;
+        text-align: center;
+        transition: all 0.3s ease;
+        min-height: 50px;
+        width: 100%;
+    }
+
+    .booking-slot:hover {
+        transform: scale(1.05);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .booking-slot.empty {
+        background-color: #ecf0f1;
+        color: #7f8c8d;
+    }
+
+    .booking-slot.pending {
+        background-color: #3498db;
+        color: white;
+    }
+
+    .booking-slot.confirmed {
+        background-color: #27ae60;
+        color: white;
+    }
+
+    .booking-slot.flexible {
+        background-color: #f39c12;
+        color: white;
+    }
+
+    .booking-slot.waiting-payment {
+        background-color: #e74c3c;
+        color: white;
+    }
+
+    .booking-slot.locked {
+        background-color: #95a5a6;
+        color: white;
+    }
+
+    .booking-slot.incomplete-service {
+        background-color: #f1c40f;
+        color: #333;
+    }
+
+    .booking-info {
+        font-size: 12px;
+        margin-top: 3px;
+        line-height: 1.3;
+        max-height: 50px;
+        /* Ellipsis for long content: clamp to 2 lines */
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        text-overflow: ellipsis;
+        white-space: normal;
+        word-break: normal;
+    }
+
+    .time-slot-separator {
+        border-right: 2px solid #95a5a6;
+    }
+
+    .no-data-message {
+        text-align: center;
+        padding: 40px;
+        color: #7f8c8d;
+        font-size: 16px;
+    }
+
+    .schedule-wrapper {
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        overflow-x: auto;
+        overflow-y: visible;
+    }
+
+    .schedule-wrapper::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .schedule-wrapper::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+
+    .schedule-wrapper::-webkit-scrollbar-thumb {
+        background: #16a085;
+        border-radius: 4px;
+    }
+
+    .schedule-wrapper::-webkit-scrollbar-thumb:hover {
+        background: #138d75;
+    }
+
+    .field-name-cell, .schedule-table th:first-child {
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .loading-spinner {
+        display: none;
+        text-align: center;
+        padding: 20px;
+    }
+
+    .loading-spinner.active {
+        display: block;
+    }
+
+    .btn-group-custom {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-reset {
+        background-color: #95a5a6;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background-color 0.3s;
+    }
+
+    .btn-reset:hover {
+        background-color: #7f8c8d;
+        color: white;
+        text-decoration: none;
+    }
+
+    /* Modal Styles */
+    .booking-modal {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        animation: fadeIn 0.3s;
+        overflow-y: auto;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .modal-content-custom {
+        background-color: #fefefe;
+        margin: 5% auto;
+        padding: 0;
+        border-radius: 10px;
+        width: 90%;
+        max-width: 600px;
+        max-height: 85vh;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        animation: slideIn 0.3s;
+        display: flex;
+        flex-direction: column;
+    }
+
+    @@keyframes slideIn {
+        from {
+            transform: translateY(-50px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .modal-header-custom {
+        background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 10px 10px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-header-custom h3 {
+        margin: 0;
+        font-weight: 600;
+    }
+
+    .close-modal {
+        color: white;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        background: none;
+        border: none;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        line-height: 30px;
+        text-align: center;
+        border-radius: 50%;
+        transition: background-color 0.3s;
+    }
+
+    .close-modal:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .modal-body-custom {
+        padding: 25px;
+        overflow-y: auto;
+        max-height: calc(85vh - 80px);
+    }
+
+    .booking-detail-row {
+        display: flex;
+        padding: 12px 0;
+        border-bottom: 1px solid #ecf0f1;
+    }
+
+    .booking-detail-row:last-child {
+        border-bottom: none;
+    }
+
+    .booking-detail-label {
+        font-weight: 600;
+        width: 150px;
+        color: #34495e;
+    }
+
+    .booking-detail-value {
+        flex: 1;
+        color: #2c3e50;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .status-pending { background-color: #e74c3c; color: white; }
+    .status-confirmed { background-color: #27ae60; color: white; }
+    .status-completed { background-color: #3498db; color: white; }
+    .status-cancelled { background-color: #95a5a6; color: white; }
+    .status-noshow { background-color: #e67e22; color: white; }
+
+    .modal-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+        justify-content: flex-end;
+        padding-top: 20px;
+        border-top: 1px solid #ecf0f1;
+    }
+
+    .btn-action {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 14px;
+    }
+
+    .btn-confirm {
+        background-color: #27ae60;
+        color: white;
+    }
+
+    .btn-confirm:hover {
+        background-color: #229954;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(39, 174, 96, 0.3);
+    }
+
+    .btn-complete {
+        background-color: #3498db;
+        color: white;
+    }
+
+    .btn-complete:hover {
+        background-color: #2980b9;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+    }
+
+    .btn-noshow {
+        background-color: #e67e22;
+        color: white;
+    }
+
+    .btn-noshow:hover {
+        background-color: #d35400;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(230, 126, 34, 0.3);
+    }
+
+    .btn-cancel {
+        background-color: #e74c3c;
+        color: white;
+    }
+
+    .btn-cancel:hover {
+        background-color: #c0392b;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+    }
+
+    .btn-close-modal {
+        background-color: #95a5a6;
+        color: white;
+    }
+
+    .btn-close-modal:hover {
+        background-color: #7f8c8d;
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <!-- Header & Filters -->
+    <div class="filter-container">
+        <h2>Trạng thái sân</h2>
+        <div class="filter-box">
+            <div class="form-group">
+                <label for="facilityFilter">Cơ sở</label>
+                <select id="facilityFilter" class="form-control filter-control">
+                    <option value="">Tất cả cơ sở</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="fieldFilter">Sân</label>
+                <select id="fieldFilter" class="form-control filter-control">
+                    <option value="">Tất cả sân</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="statusFilter">Trạng thái</label>
+                <select id="statusFilter" class="form-control filter-control">
+                    <option value="">Tất cả</option>
+                    <option value="0">Chờ xác nhận</option>
+                    <option value="1">Đã xác nhận</option>
+                    <option value="3">Hoàn thành</option>
+                    <option value="4">Không nhận sân</option>
+                    <option value="2">Đã hủy</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="dateFilter">Ngày</label>
+                <input type="date" id="dateFilter" class="form-control filter-control" />
+            </div>
+            <button class="btn btn-reset" onclick="resetFilters()">Chọn lại</button>
+        </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend-container">
+        <span style="font-weight: 600;">Chú thích:</span>
+        <div class="legend-item">
+            <span class="legend-badge badge-trống">Trống</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-badge badge-lịch-ngày">Đã xác nhận</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-badge badge-chờ-kh-cọc">Chờ xác nhận</span>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loadingSpinner">
+        <div class="spinner-border text-success" role="status">
+            <span class="visually-hidden">Đang tải...</span>
+        </div>
+    </div>
+
+    <!-- Schedule Table -->
+    <div class="schedule-wrapper">
+        <div id="scheduleContainer">
+            <div class="no-data-message">Vui lòng chọn ngày để xem lịch đặt sân</div>
+        </div>
+    </div>
+
+    <!-- Latest Pending Bookings (Quick Actions) -->
+    <div class="mt-4">
+        <div class="card shadow-sm">
+            <div class="card-header" style="background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%); color: white;">
+                <h5 class="mb-0">Booking mới nhất cần xác nhận</h5>
+                <small class="text-white-50">Hiển thị các booking trạng thái "Chờ xác nhận" mới nhất từ tất cả cơ sở/sân</small>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0" id="latestBookingsTable">
+                        <thead class="table-success">
+                            <tr>
+                                <th style="width: 100px;">Mã</th>
+                                <th>Cơ sở</th>
+                                <th>Sân</th>
+                                <th style="width: 140px;">Ngày</th>
+                                <th style="width: 140px;">Thời gian</th>
+                                <th>Người đặt</th>
+                                <th style="width: 160px;">Tổng tiền</th>
+                                <th style="width: 140px;">Trạng thái</th>
+                                <th style="width: 200px;">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="latestBookingsBody">
+                            <tr><td colspan="9" class="text-center py-3 text-muted">Đang tải danh sách...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="px-3 py-2 d-flex justify-content-end" id="latestBookingsPagination"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Booking Detail Modal -->
+<div id="bookingModal" class="booking-modal">
+    <div class="modal-content-custom">
+        <div class="modal-header-custom">
+            <h3>Chi tiết đặt sân</h3>
+            <button class="close-modal" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body-custom" id="modalBody">
+            <!-- Content will be dynamically loaded -->
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const LATEST_ITEMS_PER_PAGE = 10;
+        let latestPage = 1;
+        // Store all bookings data - convert to safe format without circular references
+        let allBookings = @Html.Raw(Json.Serialize(
+            (Model ?? new List<BookingSportsField.Models.Booking>()).Select(b => new {
+                id = b.Id,
+                bookingDate = b.BookingDate.ToString("yyyy-MM-dd"),
+                startTime = b.StartTime.ToString(@"hh\:mm"),
+                endTime = b.EndTime.ToString(@"hh\:mm"),
+                status = (int)b.Status,
+                statusName = b.Status.ToString(),
+                totalPrice = b.TotalPrice,
+                fieldId = b.FieldId,
+                userId = b.UserId,
+                createdAt = b.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
+                field = new {
+                    id = b.Field.Id,
+                    name = b.Field.Name,
+                    pricePerHour = b.Field.PricePerHour,
+                    facilityId = b.Field.FacilityId,
+                    facility = new {
+                        id = b.Field.Facility.Id,
+                        name = b.Field.Facility.Name,
+                        address = b.Field.Facility.Address,
+                        openingTime = b.Field.Facility.OpeningTime.ToString(@"hh\:mm"),
+                        closingTime = b.Field.Facility.ClosingTime.ToString(@"hh\:mm")
+                    }
+                },
+                user = new {
+                    id = b.User.Id,
+                    email = b.User.Email,
+                    phoneNumber = b.User.PhoneNumber,
+                    fullName = b.User.FullName
+                }
+            }).ToList()
+        ));
+
+        // Get all unique facilities and fields from bookings
+        let allFacilities = new Map();
+        let allFields = new Map();
+        
+        allBookings.forEach(booking => {
+            if (booking.field && booking.field.facility) {
+                allFacilities.set(booking.field.facility.id, booking.field.facility);
+            }
+            if (booking.field) {
+                allFields.set(booking.field.id, booking.field);
+            }
+        });
+        
+        let currentFilters = {
+            facility: '',
+            field: '',
+            status: '', // '' means all active (exclude cancelled)
+            date: new Date().toISOString().split('T')[0]
+        };
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function () {
+            // Set today's date by default
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('dateFilter').value = today;
+            currentFilters.date = today;
+
+            // Load facilities
+            loadFacilities();
+
+            // Load initial schedule
+            loadSchedule();
+
+            // Add event listeners for filters
+            document.querySelectorAll('.filter-control').forEach(element => {
+                element.addEventListener('change', function () {
+                    updateFilters();
+                });
+            });
+        });
+
+        // Load facilities from bookings data
+        function loadFacilities() {
+            const facilities = new Map();
+            allBookings.forEach(booking => {
+                if (booking.field && booking.field.facility) {
+                    facilities.set(booking.field.facility.id, booking.field.facility.name);
+                }
+            });
+
+            const facilitySelect = document.getElementById('facilityFilter');
+            facilities.forEach((name, id) => {
+                const option = document.createElement('option');
+                option.value = id;
+                option.textContent = name;
+                facilitySelect.appendChild(option);
+            });
+        }
+
+        // Update filters
+        function updateFilters() {
+            currentFilters.facility = document.getElementById('facilityFilter').value;
+            currentFilters.field = document.getElementById('fieldFilter').value;
+            currentFilters.status = document.getElementById('statusFilter').value;
+            currentFilters.date = document.getElementById('dateFilter').value;
+
+            // Update field filter based on facility
+            updateFieldFilter();
+
+            // Reload schedule
+            loadSchedule();
+        }
+
+        // Update field filter based on facility
+        function updateFieldFilter() {
+            const facilityId = currentFilters.facility;
+            const fields = new Map();
+
+            allBookings.forEach(booking => {
+                const field = booking.field;
+                if (field) {
+                    if (!facilityId || (field.facility && field.facility.id == facilityId)) {
+                        fields.set(field.id, field.name);
+                    }
+                }
+            });
+
+            const fieldSelect = document.getElementById('fieldFilter');
+            const currentValue = fieldSelect.value;
+            fieldSelect.innerHTML = '<option value="">Tất cả sân</option>';
+
+            fields.forEach((name, id) => {
+                const option = document.createElement('option');
+                option.value = id;
+                option.textContent = name;
+                fieldSelect.appendChild(option);
+            });
+
+            fieldSelect.value = currentValue;
+        }
+
+        // Load schedule
+        function loadSchedule() {
+            if (!currentFilters.date) {
+                document.getElementById('scheduleContainer').innerHTML = '<div class="no-data-message">Vui lòng chọn ngày để xem lịch đặt sân</div>';
+                return;
+            }
+
+            // Show loading
+            document.getElementById('loadingSpinner').classList.add('active');
+
+            // Filter bookings based on date
+            const selectedDate = new Date(currentFilters.date);
+            const filteredBookings = allBookings.filter(booking => {
+                const bookingDate = new Date(booking.bookingDate);
+                if (bookingDate.toDateString() !== selectedDate.toDateString()) return false;
+                if (currentFilters.status === '') {
+                    // Default: hide cancelled bookings
+                    return booking.status !== 2;
+                }
+                return booking.status == parseInt(currentFilters.status);
+            });
+
+            // Get all fields based on current filters (show all fields, not just those with bookings)
+            const fields = new Map();
+            allFields.forEach((field, fieldId) => {
+                // Apply facility filter
+                if (currentFilters.facility && field.facilityId != currentFilters.facility) {
+                    return;
+                }
+                
+                // Apply field filter
+                if (currentFilters.field && field.id != currentFilters.field) {
+                    return;
+                }
+                
+                fields.set(fieldId, field);
+            });
+
+            if (fields.size === 0) {
+                document.getElementById('scheduleContainer').innerHTML = '<div class="no-data-message">Không có dữ liệu</div>';
+                document.getElementById('loadingSpinner').classList.remove('active');
+                return;
+            }
+
+            // Calculate opening and closing hours based on selected facility
+            let openingHour = 5;
+            let closingHour = 24;
+            
+            if (currentFilters.facility) {
+                // Get selected facility
+                const facility = allFacilities.get(parseInt(currentFilters.facility));
+                if (facility) {
+                    openingHour = parseInt(facility.openingTime.split(':')[0]);
+                    closingHour = parseInt(facility.closingTime.split(':')[0]);
+                }
+            } else {
+                // Get earliest opening and latest closing from all facilities
+                let earliestOpening = 24;
+                let latestClosing = 0;
+                
+                allFacilities.forEach(facility => {
+                    const opening = parseInt(facility.openingTime.split(':')[0]);
+                    const closing = parseInt(facility.closingTime.split(':')[0]);
+                    
+                    if (opening < earliestOpening) earliestOpening = opening;
+                    if (closing > latestClosing) latestClosing = closing;
+                });
+                
+                if (earliestOpening < 24) openingHour = earliestOpening;
+                if (latestClosing > 0) closingHour = latestClosing;
+            }
+            
+            // Closing hour minus 1 for last bookable slot
+            closingHour = closingHour - 1;
+
+            // Generate schedule table
+            generateScheduleTable(Array.from(fields.values()), filteredBookings, selectedDate, openingHour, closingHour);
+
+            // Hide loading
+            document.getElementById('loadingSpinner').classList.remove('active');
+
+            // Render latest pending bookings section
+            latestPage = 1;
+            renderLatestBookingsTable();
+        }
+
+        // Generate schedule table
+        function generateScheduleTable(fields, bookings, selectedDate, openingHour, closingHour) {
+            const hours = [];
+
+            // Generate hours with 1-hour intervals
+            for (let i = openingHour; i <= closingHour; i++) {
+                hours.push(i);
+            }
+
+            let html = '<table class="schedule-table">';
+
+            // Header row with time slots
+            html += '<thead><tr><th>Sân</th>';
+            hours.forEach(hour => {
+                html += `<th class="time-header">${hour}:00</th>`;
+            });
+            html += '</tr></thead>';
+
+            // Body rows with fields
+            html += '<tbody>';
+            fields.sort((a, b) => a.name.localeCompare(b.name)).forEach(field => {
+                html += `<tr><td class="field-name-cell">${field.name}</td>`;
+
+                const processedSlots = new Set();
+                
+                hours.forEach((hour, hourIndex) => {
+                    // Skip if this slot is already covered by a previous booking
+                    if (processedSlots.has(hour)) {
+                        return;
+                    }
+
+                    // Find booking that starts at or covers this time slot
+                    const booking = bookings.find(b => {
+                        if (b.fieldId !== field.id) return false;
+                        const startHour = parseInt(b.startTime.split(':')[0]);
+                        const startMinute = parseInt(b.startTime.split(':')[1]);
+                        const endHour = parseInt(b.endTime.split(':')[0]);
+                        const endMinute = parseInt(b.endTime.split(':')[1]);
+                        
+                        const slotStart = hour * 60;
+                        const slotEnd = (hour + 1) * 60;
+                        const bookingStart = startHour * 60 + startMinute;
+                        const bookingEnd = endHour * 60 + endMinute;
+                        
+                        return bookingStart < slotEnd && bookingEnd > slotStart;
+                    });
+
+                    if (booking) {
+                        // Calculate colspan (how many hours this booking covers)
+                        const startHour = parseInt(booking.startTime.split(':')[0]);
+                        const startMinute = parseInt(booking.startTime.split(':')[1]);
+                        const endHour = parseInt(booking.endTime.split(':')[0]);
+                        const endMinute = parseInt(booking.endTime.split(':')[1]);
+                        
+                        const bookingStart = startHour * 60 + startMinute;
+                        const bookingEnd = endHour * 60 + endMinute;
+                        const duration = bookingEnd - bookingStart;
+                        const colspan = Math.ceil(duration / 60);
+                        
+                        // Mark slots as processed
+                        for (let i = 0; i < colspan && (hourIndex + i) < hours.length; i++) {
+                            processedSlots.add(hours[hourIndex + i]);
+                        }
+                        
+                        const slotClass = getBookingStatusClass(booking);
+                        const slotContent = getBookingSlotContent(booking);
+                        
+                        html += `<td class="time-slot-separator" colspan="${colspan}"><div class="booking-slot ${slotClass}" onclick="handleSlotClick(${field.id}, ${hour}, event)" title="${getTooltipText(booking)}">${slotContent}</div></td>`;
+                    } else {
+                        html += `<td class="time-slot-separator"><div class="booking-slot empty" onclick="handleSlotClick(${field.id}, ${hour}, event)" title="Trống"></div></td>`;
+                    }
+                });
+
+                html += '</tr>';
+            });
+            html += '</tbody>';
+            html += '</table>';
+
+            document.getElementById('scheduleContainer').innerHTML = html;
+        }
+
+        // Get booking status class
+        // BookingStatus enum: 0=Pending, 1=Confirmed, 2=Cancelled, 3=Completed, 4=NoShow
+        function getBookingStatusClass(booking) {
+            if (!booking) return 'empty';
+
+            switch (booking.status) {
+                case 0: // Pending - Chờ xác nhận
+                    return 'waiting-payment';
+                case 1: // Confirmed - Đã xác nhận
+                    return 'confirmed';
+                case 2: // Cancelled - Đã hủy
+                    return 'empty';
+                case 3: // Completed - Đã hoàn thành
+                    return 'confirmed';
+                case 4: // NoShow - Không nhận sân
+                    return 'locked';
+                default:
+                    return 'empty';
+            }
+        }
+
+        // Get booking slot content
+        function getBookingSlotContent(booking) {
+            if (!booking) return '';
+
+            const statusText = getBookingStatusText(booking.status);
+            let userName = 'N/A';
+            if (booking.user) {
+                if (booking.user.fullName) {
+                    userName = booking.user.fullName;
+                } else if (booking.user.email) {
+                    userName = booking.user.email.split('@@')[0];
+                }
+            }
+            return `<span class="booking-info">${statusText}<br>${userName}</span>`;
+        }
+
+        // Get booking status text
+        // BookingStatus enum: 0=Pending, 1=Confirmed, 2=Cancelled, 3=Completed, 4=NoShow
+        function getBookingStatusText(status) {
+            switch (status) {
+                case 0: return 'Chờ xác nhận';
+                case 1: return 'Đã xác nhận';
+                case 2: return 'Đã hủy';
+                case 3: return 'Hoàn thành';
+                case 4: return 'Không nhận sân';
+                default: return 'Không xác định';
+            }
+        }
+
+        // Get tooltip text
+        function getTooltipText(booking) {
+            if (!booking) return 'Trống';
+            return `${booking.field.name} - ${getBookingStatusText(booking.status)} - ${booking.user?.email || 'N/A'}`;
+        }
+
+        // Handle slot click
+        function handleSlotClick(fieldId, hour, event) {
+            const booking = allBookings.find(b => {
+                if (b.fieldId !== fieldId || b.bookingDate !== currentFilters.date) return false;
+                if (currentFilters.status === '') {
+                    // Default: hide cancelled bookings
+                    if (b.status === 2) return false;
+                } else {
+                    if (b.status != parseInt(currentFilters.status)) return false;
+                }
+                
+                const startHour = parseInt(b.startTime.split(':')[0]);
+                const startMinute = parseInt(b.startTime.split(':')[1]);
+                const endHour = parseInt(b.endTime.split(':')[0]);
+                const endMinute = parseInt(b.endTime.split(':')[1]);
+                
+                // Convert to minutes for easier comparison
+                const slotStart = hour * 60;
+                const slotEnd = (hour + 1) * 60; // 1-hour slot
+                const bookingStart = startHour * 60 + startMinute;
+                const bookingEnd = endHour * 60 + endMinute;
+                
+                // Check if booking overlaps with this time slot
+                return bookingStart < slotEnd && bookingEnd > slotStart;
+            });
+
+            if (booking) {
+                showBookingModal(booking);
+            }
+        }
+
+        // Show booking modal
+        function showBookingModal(booking) {
+            const statusClass = getStatusClass(booking.status);
+            const statusText = getBookingStatusText(booking.status);
+            const bookingDate = new Date(booking.bookingDate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            let actionsHtml = '';
+            
+            // Chờ xác nhận - có thể xác nhận hoặc hủy
+            if (booking.status === 0 && bookingDate >= today) {
+                actionsHtml += `
+                    <button class="btn-action btn-confirm" onclick="confirmBooking(${booking.id})">Xác nhận</button>
+                    <button class="btn-action btn-cancel" onclick="cancelBooking(${booking.id})">Hủy</button>
+                `;
+            }
+            
+            // Đã xác nhận - có thể đánh dấu hoàn thành hoặc không đến (nếu đã qua ngày)
+            if (booking.status === 1 && bookingDate < today) {
+                actionsHtml += `
+                    <button class="btn-action btn-complete" onclick="markAsCompleted(${booking.id})">Hoàn thành</button>
+                    <button class="btn-action btn-noshow" onclick="markAsNoShow(${booking.id})">Không nhận sân</button>
+                `;
+            }
+            
+            // Có thể hủy nếu trước 1 ngày và chưa bị hủy
+            if (booking.status !== 2 && bookingDate.getTime() > today.getTime() + 86400000) {
+                if (booking.status !== 0) {
+                    actionsHtml += `<button class="btn-action btn-cancel" onclick="cancelBooking(${booking.id})">Hủy đặt sân</button>`;
+                }
+            }
+
+            const modalContent = `
+                <div class="booking-detail-row">
+                    <div class="booking-detail-label">Mã đặt sân:</div>
+                    <div class="booking-detail-value">#${booking.id}</div>
+                </div>
+                <div class="booking-detail-row">
+                    <div class="booking-detail-label">Cơ sở:</div>
+                    <div class="booking-detail-value">${booking.field.facility.name}</div>
+                </div>
+                <div class="booking-detail-row">
+                    <div class="booking-detail-label">Địa chỉ:</div>
+                    <div class="booking-detail-value">${booking.field.facility.address}</div>
+                </div>
+                <div class="booking-detail-row">
+                    <div class="booking-detail-label">Sân:</div>
+                    <div class="booking-detail-value">${booking.field.name}</div>
+                </div>
+                <div class="booking-detail-row">
+                    <div class="booking-detail-label">Ngày đặt:</div>
+                    <div class="booking-detail-value">${new Date(booking.bookingDate).toLocaleDateString('vi-VN')}</div>
+                </div>
+                <div class="booking-detail-row">
+                    <div class="booking-detail-label">Thời gian:</div>
+                    <div class="booking-detail-value">${booking.startTime} - ${booking.endTime}</div>
+                </div>
+                <div class="booking-detail-row">
+                    <div class="booking-detail-label">Người đặt:</div>
+                    <div class="booking-detail-value">${booking.user.fullName || booking.user.email}</div>
+                </div>
+                <div class="booking-detail-row">
+                    <div class="booking-detail-label">Email:</div>
+                    <div class="booking-detail-value">${booking.user.email}</div>
+                </div>
+                <div class="booking-detail-row">
+                    <div class="booking-detail-label">Số điện thoại:</div>
+                    <div class="booking-detail-value">${booking.user.phoneNumber || 'Chưa cập nhật'}</div>
+                </div>
+                <div class="booking-detail-row">
+                    <div class="booking-detail-label">Tổng tiền:</div>
+                    <div class="booking-detail-value" style="color: #e74c3c; font-weight: 600; font-size: 16px;">${booking.totalPrice.toLocaleString('vi-VN')} VND</div>
+                </div>
+                <div class="booking-detail-row">
+                    <div class="booking-detail-label">Trạng thái:</div>
+                    <div class="booking-detail-value"><span class="status-badge ${statusClass}">${statusText}</span></div>
+                </div>
+                <div class="booking-detail-row">
+                    <div class="booking-detail-label">Thời gian tạo:</div>
+                    <div class="booking-detail-value">${new Date(booking.createdAt).toLocaleString('vi-VN')}</div>
+                </div>
+                ${actionsHtml ? `<div class="modal-actions">${actionsHtml}<button class="btn-action btn-close-modal" onclick="closeModal()">Đóng</button></div>` : '<div class="modal-actions"><button class="btn-action btn-close-modal" onclick="closeModal()">Đóng</button></div>'}
+            `;
+
+            document.getElementById('modalBody').innerHTML = modalContent;
+            document.getElementById('bookingModal').style.display = 'block';
+        }
+
+        // Get status class for badge
+        function getStatusClass(status) {
+            switch (status) {
+                case 0: return 'status-pending';
+                case 1: return 'status-confirmed';
+                case 2: return 'status-cancelled';
+                case 3: return 'status-completed';
+                case 4: return 'status-noshow';
+                default: return '';
+            }
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('bookingModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('bookingModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // Helper to POST status update via AJAX and refresh schedule without resetting filters
+        async function postStatus(url, bookingId) {
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                    body: new URLSearchParams({ bookingId })
+                });
+                const data = await response.json();
+                if (!data.success) {
+                    alert(data.message || 'Cập nhật trạng thái thất bại.');
+                    return;
+                }
+                // Update local state
+                const idx = allBookings.findIndex(b => b.id === data.bookingId);
+                if (idx !== -1) {
+                    allBookings[idx].status = data.status;
+                }
+                // Close modal and re-render
+                closeModal();
+                loadSchedule();
+                renderLatestBookingsTable();
+                renderLatestBookingsPagination(0); // will be recalculated inside render
+            } catch (err) {
+                alert('Có lỗi khi kết nối máy chủ. Vui lòng thử lại.');
+                console.error(err);
+            }
+        }
+
+        // Confirm booking (AJAX)
+        function confirmBooking(bookingId) {
+            if (confirm('Bạn có chắc chắn muốn xác nhận đặt sân này?')) {
+                postStatus('@Url.Action("ConfirmBookingAjax", "Booking", new { area = "FieldOwner" })', bookingId);
+            }
+        }
+
+        // Cancel booking (AJAX)
+        function cancelBooking(bookingId) {
+            if (confirm('Bạn có chắc chắn muốn hủy đặt sân này?')) {
+                postStatus('@Url.Action("CancelBookingAjax", "Booking", new { area = "FieldOwner" })', bookingId);
+            }
+        }
+
+        // Mark as completed (AJAX)
+        function markAsCompleted(bookingId) {
+            if (confirm('Bạn có chắc chắn đánh dấu đặt sân này là đã hoàn thành?')) {
+                postStatus('@Url.Action("MarkAsCompletedAjax", "Booking", new { area = "FieldOwner" })', bookingId);
+            }
+        }
+
+        // Mark as no show (AJAX)
+        function markAsNoShow(bookingId) {
+            if (confirm('Bạn có chắc chắn đánh dấu khách hàng không nhận sân?')) {
+                postStatus('@Url.Action("MarkAsNoShowAjax", "Booking", new { area = "FieldOwner" })', bookingId);
+            }
+        }
+
+        // Reset filters
+        function resetFilters() {
+            document.getElementById('facilityFilter').value = '';
+            document.getElementById('fieldFilter').value = '';
+            document.getElementById('statusFilter').value = '';
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('dateFilter').value = today;
+            currentFilters = {
+                facility: '',
+                field: '',
+                status: '',
+                date: today
+            };
+            loadSchedule();
+            renderLatestBookingsTable();
+            renderLatestBookingsPagination(0);
+        }
+
+        // Render latest pending bookings (newest first)
+        function renderLatestBookingsTable() {
+            const tbody = document.getElementById('latestBookingsBody');
+            if (!tbody) return;
+
+            // Get latest pending bookings (status 0), newest by createdAt
+            const pendingAll = allBookings
+                .filter(b => b.status === 0)
+                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+            const total = pendingAll.length;
+            const totalPages = Math.max(1, Math.ceil(total / LATEST_ITEMS_PER_PAGE));
+            if (latestPage > totalPages) latestPage = totalPages;
+            const start = (latestPage - 1) * LATEST_ITEMS_PER_PAGE;
+            const pending = pendingAll.slice(start, start + LATEST_ITEMS_PER_PAGE);
+
+            if (pending.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center py-3 text-muted">Hiện không có booking chờ xác nhận.</td></tr>';
+                document.getElementById('latestBookingsPagination').innerHTML = '';
+                return;
+            }
+
+            const rows = pending.map(b => {
+                const dateStr = new Date(b.bookingDate).toLocaleDateString('vi-VN');
+                const statusText = getBookingStatusText(b.status);
+                const statusClass = getStatusClass(b.status);
+                const userName = (b.user && (b.user.fullName || b.user.email)) ? (b.user.fullName || b.user.email) : 'N/A';
+                const facilityName = b.field?.facility?.name || 'N/A';
+                const fieldName = b.field?.name || 'N/A';
+                const totalStr = (b.totalPrice ?? 0).toLocaleString('vi-VN') + ' VND';
+
+                return `
+                    <tr>
+                        <td>#${b.id}</td>
+                        <td>${facilityName}</td>
+                        <td>${fieldName}</td>
+                        <td>${dateStr}</td>
+                        <td>${b.startTime} - ${b.endTime}</td>
+                        <td>${userName}</td>
+                        <td><strong style="color:#013b0f;">${totalStr}</strong></td>
+                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                        <td>
+                            <div class="btn-group-custom">
+                                <button class="btn-action btn-confirm" onclick="confirmBooking(${b.id})">Xác nhận</button>
+                                <button class="btn-action btn-cancel" onclick="cancelBooking(${b.id})">Hủy</button>
+                            </div>
+                        </td>
+                    </tr>`;
+            }).join('');
+
+            tbody.innerHTML = rows;
+
+            renderLatestBookingsPagination(total);
+        }
+
+        function renderLatestBookingsPagination(total) {
+            const container = document.getElementById('latestBookingsPagination');
+            if (!container) return;
+            const totalItems = total || allBookings.filter(b => b.status === 0).length;
+            const totalPages = Math.max(1, Math.ceil(totalItems / LATEST_ITEMS_PER_PAGE));
+            if (totalPages <= 1) { container.innerHTML = ''; return; }
+
+            const makePage = (label, page, disabled, active) => {
+                return `<ul class="pagination pagination-sm mb-0"><li class="page-item ${disabled ? 'disabled' : ''}"><a class="page-link" href="#" data-page="${page}">${label}</a></li></ul>`;
+            };
+
+            let html = '<ul class="pagination pagination-sm mb-0">';
+            html += `<li class="page-item ${latestPage === 1 ? 'disabled' : ''}"><a class="page-link" href="#" data-page="${latestPage - 1}">Trước</a></li>`;
+            for (let p = 1; p <= totalPages; p++) {
+                html += `<li class="page-item ${p === latestPage ? 'active' : ''}"><a class="page-link" href="#" data-page="${p}">${p}</a></li>`;
+            }
+            html += `<li class="page-item ${latestPage === totalPages ? 'disabled' : ''}"><a class="page-link" href="#" data-page="${latestPage + 1}">Sau</a></li>`;
+            html += '</ul>';
+
+            container.innerHTML = html;
+            container.querySelectorAll('a.page-link').forEach(a => {
+                a.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const p = parseInt(a.getAttribute('data-page'));
+                    if (!isNaN(p) && p >= 1 && p <= totalPages) {
+                        latestPage = p;
+                        renderLatestBookingsTable();
+                    }
+                });
+            });
+        }
+    </script>
+}

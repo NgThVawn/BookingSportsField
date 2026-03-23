@@ -1,0 +1,50 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using BookingSportsField.Models
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<ul class="navbar-nav ms-auto">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        var user = await UserManager.GetUserAsync(User);
+        var roles = await UserManager.GetRolesAsync(user);
+
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle text-white fw-semibold" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-user-circle"></i> @UserManager.GetUserName(User)
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+                @if (roles.Contains("Admin"))
+                {
+                    <li><a class="dropdown-item" asp-area="Admin" asp-controller="Facility" asp-action="Index"><i class="fas fa-futbol"></i> QL sân</a></li>
+                    <li><a class="dropdown-item" asp-area="Admin" asp-controller="Booking" asp-action="Index"><i class="fas fa-calendar-check"></i> QL Booking</a></li>
+                }
+                @if (roles.Contains("FieldOwner"))
+                {
+                    <li><a class="dropdown-item" asp-area="FieldOwner" asp-controller="Facility" asp-action="Index"><i class="fas fa-futbol"></i> QL sân</a></li>
+                    <li><a class="dropdown-item" asp-area="FieldOwner" asp-controller="Booking" asp-action="Index"><i class="fas fa-calendar-check"></i> QL Booking</a></li>
+                }
+				@if (roles.Contains("Customer"))
+				{
+                    <li><a class="dropdown-item" asp-area="" asp-controller="Home" asp-action="Favorites"><i class="fas fa-heart text-danger"></i> Đã thích</a></li>
+                    <li><a class="dropdown-item" asp-area="" asp-controller="Home" asp-action="BookingHistory"><i class="fas fa-history"></i> Lịch sử</a></li>
+				}
+                <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index"><i class="fas fa-user"></i> Hồ sơ</a></li>
+                <li>
+                    <form id="logoutForm" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                        <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt"></i> Đăng xuất</button>
+                    </form>
+                </li>
+            </ul>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link text-white fw-semibold" asp-area="Identity" asp-page="/Account/Register"><i class="fas fa-user-plus"></i> Đăng ký</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-white fw-semibold" asp-area="Identity" asp-page="/Account/Login"><i class="fas fa-sign-in-alt"></i> Đăng nhập</a>
+        </li>
+    }
+</ul>

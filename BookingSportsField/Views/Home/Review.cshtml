@@ -1,0 +1,85 @@
+﻿@model BookingSportsField.Models.Facility
+
+@{
+    ViewData["Title"] = "Đánh giá cơ sở";
+}
+
+<div class="container mt-5">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold">Đánh giá về cơ sở <span class="text-success">@Model.Name</span></h2>
+    </div>
+
+    <!-- Thông tin cơ sở -->
+    <div class="card shadow-lg border-0 rounded-4 p-4 mb-4 bg-light">
+        <div class="row">
+            <div class="col-md-8">
+                <h4 class="mb-3 text-success fw-bold">Thông tin cơ sở</h4>
+                <p><i class="bi bi-geo-alt-fill text-danger me-2"></i><strong>Địa chỉ:</strong> @Model.Address</p>
+                <p>
+                    <i class="bi bi-clock-fill text-warning me-2"></i>
+                    <strong>Giờ hoạt động:</strong>
+                    @Model.OpeningTime.ToString(@"hh\:mm") - @Model.ClosingTime.ToString(@"hh\:mm")
+                </p>
+            </div>
+            <div class="col-md-4 d-flex align-items-center justify-content-center">
+                <i class="bi bi-building display-1 text-secondary"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form đánh giá -->
+    <form method="post" asp-action="Review" asp-controller="Home" class="card shadow-lg border-0 rounded-4 p-4">
+        <input type="hidden" name="facilityId" value="@Model.Id" />
+        <input type="hidden" name="bookingId" value="@ViewBag.bookingId" />
+        <input type="hidden" id="ratingInput" name="rating" value="0" />
+
+        <div class="form-group text-center mb-4">
+            <label class="form-label fw-semibold fs-5 d-block">Đánh giá (sao):</label>
+            <div id="starRating" class="d-inline-block">
+                @for (int i = 1; i <= 5; i++)
+                {
+                    <i class="bi bi-star star fs-2 mx-1" data-value="@i" style="cursor: pointer;"></i>
+                }
+            </div>
+        </div>
+
+        <div class="form-group mb-3">
+            <label for="Comment" class="form-label fw-semibold">Bình luận của bạn:</label>
+            <textarea name="comment" class="form-control rounded-3" rows="4" placeholder="Viết cảm nhận tại đây..." required></textarea>
+        </div>
+
+        <div class="d-grid">
+            <button type="submit" class="btn btn-success btn-lg rounded-pill">Gửi Đánh giá</button>
+        </div>
+    </form>
+</div>
+
+<!-- ICONS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+
+@section Scripts {
+    <script>
+        const stars = document.querySelectorAll('#starRating .star');
+        const ratingInput = document.getElementById('ratingInput');
+
+        stars.forEach(star => {
+            star.addEventListener('click', function () {
+                const rating = parseInt(this.getAttribute('data-value'));
+                ratingInput.value = rating;
+
+                // Hiệu ứng sao sáng
+                stars.forEach((s, index) => {
+                    if (index < rating) {
+                        s.classList.remove('bi-star');
+                        s.classList.add('bi-star-fill');
+                        s.style.color = '#ffc107'; // vàng sáng
+                    } else {
+                        s.classList.remove('bi-star-fill');
+                        s.classList.add('bi-star');
+                        s.style.color = '#ced4da'; // xám
+                    }
+                });
+            });
+        });
+    </script>
+}

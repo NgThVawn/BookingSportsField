@@ -1,0 +1,84 @@
+﻿@{
+    ViewData["Title"] = "Trang chủ sân";
+    // Layout = "~/Views/Shared/_LayoutOwner.cshtml";
+}
+
+<div class="container mt-5">
+    <h2 class="text-center fw-bold text-success-emphasis mb-4">TRANG CHỦ</h2>
+
+    <div class="row g-4">
+
+        <!-- Thông tin cơ sở -->
+        <div class="col-md-4">
+            <a class="text-decoration-none text-dark" asp-area="FieldOwner" asp-controller="Facility" asp-action="Index">
+                <div class="card shadow h-100 text-center admin-card hover-shadow">
+                    <div class="card-body">
+                        <i class="bi bi-building fs-1 text-primary mb-3"></i>
+                        <h5 class="card-title fw-bold">Thông tin cơ sở</h5>
+                        <p class="card-text text-muted small">Xem và chỉnh sửa thông tin cơ sở sân của bạn.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <!-- Quản lý đặt sân -->
+        <div class="col-md-4">
+            <a class="text-decoration-none text-dark" asp-area="FieldOwner" asp-controller="Booking" asp-action="Index">
+                <div class="card shadow h-100 text-center admin-card hover-shadow">
+                    <div class="card-body position-relative">
+                        <i class="bi bi-calendar-check fs-1 text-danger mb-3"></i>
+
+                        @if (ViewBag.PendingBookingCount > 0)
+                        {
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                @ViewBag.PendingBookingCount
+                            </span>
+                        }
+
+                        <h5 class="card-title fw-bold">Lịch đặt sân</h5>
+                        <p class="card-text text-muted small">Xem danh sách các lượt đặt sân của khách hàng.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Doanh thu -->
+        <div class="col-md-4">
+            <a class="text-decoration-none text-dark" asp-area="FieldOwner" asp-controller="Booking" asp-action="Statistics">
+                <div class="card shadow h-100 text-center admin-card hover-shadow">
+                    <div class="card-body">
+                        <i class="bi bi-bar-chart-line fs-1 text-info mb-3"></i>
+                        <h5 class="card-title fw-bold">Doanh thu</h5>
+                        <p class="card-text text-muted small">Thống kê doanh thu theo ngày, tháng, năm.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        
+
+        <!-- Cài đặt tài khoản -->
+        <div class="col-md-4">
+            <a class="text-decoration-none text-dark" asp-area="Identity" asp-page="/Account/Manage/Index">
+                <div class="card shadow h-100 text-center admin-card hover-shadow">
+                    <div class="card-body">
+                        <i class="bi bi-person-gear fs-1 text-secondary mb-3"></i>
+                        <h5 class="card-title fw-bold">Cài đặt</h5>
+                        <p class="card-text text-muted small">Cập nhật mật khẩu và thông tin tài khoản cá nhân.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .admin-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        border-radius: 12px;
+    }
+
+        .admin-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+</style>

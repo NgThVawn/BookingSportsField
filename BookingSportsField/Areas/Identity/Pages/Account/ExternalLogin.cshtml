@@ -1,0 +1,55 @@
+﻿@page
+@model ExternalLoginModel
+@{
+    ViewData["Title"] = "Hoàn tất đăng ký";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow rounded-4">
+                <div class="card-body p-4">
+                    <h2 class="text-center text-primary mb-4">Hoàn tất đăng ký</h2>
+
+                    <p class="text-center text-muted">
+                        Bạn đã đăng nhập bằng <strong class="text-dark">@Model.ProviderDisplayName</strong>.
+                        Vui lòng nhập email và chọn vai trò để hoàn tất.
+                    </p>
+
+                    <form asp-page-handler="Confirmation" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="mt-4">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+
+                        <!-- Email -->
+                        <div class="form-floating mb-3">
+                            <input asp-for="Input.Email" class="form-control" placeholder="Email của bạn" />
+                            <label asp-for="Input.Email">Email</label>
+                            <span asp-validation-for="Input.Email" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Role -->
+                        <div class="form-floating mb-4">
+                            <select asp-for="Input.SelectedRole" class="form-select">
+                                <option value="Customer">Khách hàng</option>
+                                <option value="FieldOwner">Chủ sân</option>
+                            </select>
+                            <label asp-for="Input.SelectedRole">Chọn vai trò</label>
+                            <span asp-validation-for="Input.SelectedRole" class="text-danger small"></span>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-semibold">
+                            Đăng ký và tiếp tục
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <p class="text-center mt-4">
+                <a asp-page="/Account/Login" class="text-decoration-none text-muted">← Quay lại trang đăng nhập</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

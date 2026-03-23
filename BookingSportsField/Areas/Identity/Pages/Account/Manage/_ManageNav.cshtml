@@ -1,0 +1,30 @@
+﻿@inject SignInManager<ApplicationUser> SignInManager
+@{
+    var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
+}
+
+<div class="list-group shadow-sm rounded-4 overflow-hidden">
+    <a class="list-group-item list-group-item-action d-flex align-items-center gap-2 @ManageNavPages.IndexNavClass(ViewContext)"
+       id="profile" asp-page="./Index">
+        <i class="bi bi-person-circle"></i> Hồ sơ cá nhân
+    </a>
+    <a class="list-group-item list-group-item-action d-flex align-items-center gap-2 @ManageNavPages.EmailNavClass(ViewContext)"
+       id="email" asp-page="./Email">
+        <i class="bi bi-envelope"></i> Địa chỉ Email
+    </a>
+    <a class="list-group-item list-group-item-action d-flex align-items-center gap-2 @ManageNavPages.ChangePasswordNavClass(ViewContext)"
+       id="change-password" asp-page="./ChangePassword">
+        <i class="bi bi-key"></i> Đổi mật khẩu
+    </a>
+    @if (hasExternalLogins)
+    {
+        <a class="list-group-item list-group-item-action d-flex align-items-center gap-2 @ManageNavPages.ExternalLoginsNavClass(ViewContext)"
+           id="external-login" asp-page="./ExternalLogins">
+            <i class="bi bi-box-arrow-in-right"></i> Đăng nhập khác
+        </a>
+    }
+    <a class="list-group-item list-group-item-action d-flex align-items-center gap-2 @ManageNavPages.PersonalDataNavClass(ViewContext)"
+       id="personal-data" asp-page="./PersonalData">
+        <i class="bi bi-database-lock"></i> Dữ liệu cá nhân
+    </a>
+</div>

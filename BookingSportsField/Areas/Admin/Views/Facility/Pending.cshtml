@@ -1,0 +1,88 @@
+﻿@model IEnumerable<BookingSportsField.Models.Facility>
+
+@{
+    ViewData["Title"] = "Cơ sở chờ phê duyệt";
+}
+
+<div class="container mt-4">
+    <h2 class="text-center text-success-emphasis mb-4">CƠ SỞ CHỜ PHÊ DUYỆT</h2>
+
+    <div class="card shadow-lg p-3">
+        <table id="facilityTable" class="table table-bordered table-striped table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Tên</th>
+                    <th>Địa chỉ</th>
+                    <th>Chủ sân</th>
+                    <th>Trạng thái</th>
+                    <th class="text-center">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var facility in Model)
+                {
+                    <tr>
+                        <td>@facility.Name</td>
+                        <td>@facility.Address</td>
+                        <td>@facility.FieldOwner.Email</td>
+                        <td>
+                            @switch (facility.ApprovalStatus)
+                            {
+                                case BookingSportsField.Models.ApprovalStatus.Pending:
+                                    <span class="badge bg-warning text-dark">Chờ duyệt</span>
+                                    break;
+                                case BookingSportsField.Models.ApprovalStatus.Accepted:
+                                    <span class="badge bg-success">Đã duyệt</span>
+                                    break;
+                                case BookingSportsField.Models.ApprovalStatus.Rejected:
+                                    <span class="badge bg-danger">Từ chối</span>
+                                    break;
+                            }
+                        </td>
+                        <td class="text-center">
+                            <form method="post" asp-action="Accept" asp-route-id="@facility.Id" class="d-inline">
+                                <button class="btn btn-success btn-sm">Duyệt</button>
+                            </form>
+                            <form method="post" asp-action="Reject" asp-route-id="@facility.Id" class="d-inline ms-1">
+                                <button class="btn btn-danger btn-sm">Từ chối</button>
+                            </form>
+                            <a asp-action="Details" asp-route-id="@facility.Id" class="btn btn-info btn-sm ms-1">Chi tiết</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#facilityTable').DataTable({
+                "paging": true,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                "lengthMenu": [5, 10, 25, 50],
+                "language": {
+                    "lengthMenu": "Hiển thị _MENU_ mục",
+                    "zeroRecords": "Không tìm thấy dữ liệu",
+                    "info": "Hiển thị _START_ đến _END_ của _TOTAL_ mục",
+                    "infoEmpty": "Không có dữ liệu",
+                    "infoFiltered": "(lọc từ _MAX_ mục)",
+                    "search": "Tìm kiếm:",
+                    "paginate": {
+                        "first": "Đầu",
+                        "last": "Cuối",
+                        "next": "Tiếp",
+                        "previous": "Trước"
+                    }
+                }
+            });
+        });
+    </script>
+}

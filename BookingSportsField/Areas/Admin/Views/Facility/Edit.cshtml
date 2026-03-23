@@ -1,0 +1,115 @@
+﻿@model BookingSportsField.Models.Facility
+
+@{
+    ViewData["Title"] = "Chỉnh sửa Cơ Sở";
+}
+
+<h1 class="text-center text-primary mb-4">Chỉnh sửa Cơ Sở</h1>
+
+<div class="container">
+    <form asp-action="Edit" method="post" enctype="multipart/form-data" class="bg-light p-4 rounded shadow">
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="OwnerId" />
+
+        <!-- Facility Name -->
+        <div class="form-group">
+            <label asp-for="Name" class="control-label">Tên Cơ Sở</label>
+            <input asp-for="Name" class="form-control" placeholder="Nhập tên cơ sở" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+
+        <!-- Facility Address -->
+        <div class="form-group">
+            <label asp-for="Address" class="control-label">Địa Chỉ Cơ Sở</label>
+            <input asp-for="Address" class="form-control" placeholder="Nhập địa chỉ cơ sở" />
+            <span asp-validation-for="Address" class="text-danger"></span>
+        </div>
+
+        <!-- Opening Time -->
+        <div class="form-group">
+            <label asp-for="OpeningTime" class="control-label">Giờ Mở Cửa</label>
+            <input asp-for="OpeningTime" class="form-control" type="time" />
+            <span asp-validation-for="OpeningTime" class="text-danger"></span>
+        </div>
+
+        <!-- Closing Time -->
+        <div class="form-group">
+            <label asp-for="ClosingTime" class="control-label">Giờ Đóng Cửa</label>
+            <input asp-for="ClosingTime" class="form-control" type="time" />
+            <span asp-validation-for="ClosingTime" class="text-danger"></span>
+        </div>
+
+        <!-- Facility Description (OwnerId hidden field) -->
+        <div class="form-group">
+            <input asp-for="OwnerId" class="form-control" type="hidden" />
+            <span asp-validation-for="OwnerId" class="text-danger"></span>
+        </div>
+
+        <!-- Hiển thị ảnh hiện tại -->
+        <div class="form-group">
+            <label>Ảnh Hiện Tại</label>
+            <div class="row">
+                @if (Model.Images != null && Model.Images.Any())
+                {
+                    @foreach (var img in Model.Images)
+                    {
+                        <div class="col-md-3 mb-2">
+                            <img src="@img.ImageUrl" alt="Facility Image" class="img-fluid rounded" style="max-height: 150px; object-fit: contain;" />
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="text-muted">Chưa có hình ảnh nào.</p>
+                }
+            </div>
+        </div>
+
+        <!-- Chọn ảnh mới -->
+        <div class="form-group">
+            <label class="control-label">Tải Lên Hình Ảnh Mới</label>
+            <input type="file" name="UploadImages" class="form-control" accept="image/*" multiple onchange="previewImages(event)" />
+            <span class="text-muted">Bạn có thể tải lên nhiều hình ảnh.</span>
+        </div>
+
+        <!-- Hiển thị ảnh mới tải lên (Preview) -->
+        <div class="form-group" id="imagePreviewContainer">
+            <label class="control-label">Ảnh Mới Tải Lên</label>
+            <div id="imagePreview" class="row"></div>
+        </div>
+
+        <!-- Submit button -->
+        <div class="form-group text-center">
+            <input type="submit" value="Lưu Thay Đổi" class="btn btn-primary btn-lg" />
+            <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+
+<script>
+    // Hàm để xem trước ảnh mới tải lên
+    function previewImages(event) {
+        var files = event.target.files;
+        var previewContainer = document.getElementById("imagePreview");
+        previewContainer.innerHTML = ""; // Xóa tất cả ảnh đã hiển thị trước đó
+
+        for (var i = 0; i < files.length; i++) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var imgElement = document.createElement("img");
+                imgElement.src = e.target.result;
+                imgElement.classList.add("img-fluid", "rounded", "col-md-3", "mb-2");
+                imgElement.style = "max-height: 150px; object-fit: contain;"; // Giữ tỷ lệ ảnh mà không bị cắt xén
+                previewContainer.appendChild(imgElement);
+            };
+            reader.readAsDataURL(files[i]); // Đọc ảnh dưới dạng base64
+        }
+    }
+</script>
+

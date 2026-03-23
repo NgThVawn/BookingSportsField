@@ -1,0 +1,119 @@
+﻿@model BookingSportsField.ViewModels.AdminStatisticsViewModel
+@{
+    ViewData["Title"] = "Thống kê hệ thống";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container py-4">
+    <h2 class="fw-bold text-success-emphasis text-center mb-4"><i class="bi bi-bar-chart-fill me-2"></i>Thống kê hệ thống</h2>
+
+    <!-- Bộ lọc thời gian -->
+    <form method="get" class="row g-3 mb-4 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label">Từ ngày</label>
+            <input type="date" name="startDate" value="@Model.StartDate.ToString("yyyy-MM-dd")" class="form-control shadow-sm" />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Đến ngày</label>
+            <input type="date" name="endDate" value="@Model.EndDate.ToString("yyyy-MM-dd")" class="form-control shadow-sm" />
+        </div>
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-success w-100"><i class="bi bi-funnel-fill me-1"></i>Lọc dữ liệu</button>
+        </div>
+    </form>
+
+    <!-- Biểu đồ -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow rounded-4">
+                <div class="card-body">
+                    <h5 class="card-title text-center text-secondary fw-bold mb-3">Tỷ lệ trạng thái booking</h5>
+                    <canvas id="statusChart" style="max-height: 400px;"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card shadow rounded-4">
+                <div class="card-body">
+                    <h5 class="card-title text-center text-secondary fw-bold mb-3">Biểu đồ lượt đặt theo ngày</h5>
+                    <canvas id="dailyChart" style="max-height: 400px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thống kê tổng quan -->
+    <div class="card shadow rounded-4 mt-4">
+        <div class="card-body">
+            <h4 class="card-title fw-bold text-success-emphasis mb-3"><i class="bi bi-info-circle-fill me-2"></i>Thông tin tổng quan</h4>
+            <ul class="list-group list-group-flush fs-5">
+                <li class="list-group-item">👥 Tổng số người dùng: <strong class="text-dark">@Model.TotalUsers</strong></li>
+                <li class="list-group-item">🏟️ Cơ sở có nhiều booking nhất: <strong class="text-dark">@Model.MostBookedFacilityName</strong> <span class="text-muted">(@Model.MostBookedFacilityCount lượt)</span></li>
+                <li class="list-group-item">🧑 Người dùng đặt nhiều nhất: <strong class="text-dark">@Model.TopUserEmail</strong> <span class="text-muted">(@Model.TopUserBookingCount lượt)</span></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        Chart.defaults.font.family = "'Segoe UI', sans-serif";
+        Chart.defaults.plugins.legend.position = 'bottom';
+
+        // Pie Chart - Booking Status
+        const statusCtx = document.getElementById('statusChart');
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                        labels: @Html.Raw(Json.Serialize(Model.StatusRatios.Select(x => x.Status == "Pending" ? "Chờ xác nhận" :
+                            x.Status == "Confirmed" ? "Đã xác nhận" :
+                            x.Status == "Cancelled" ? "Đã hủy" :
+                            x.Status == "Completed" ? "Hoàn thành" :
+                            x.Status == "NoShow" ? "Không nhận sân" :
+
+                            x.Status // fallback nếu có trạng thái lạ
+                        ))),
+                datasets: [{
+                    data: @Html.Raw(Json.Serialize(Model.StatusRatios.Select(x => x.Count))),
+                    backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#007bff', '#6f42c1', '#fd7e14'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                animation: {
+                    animateScale: true
+                }
+            }
+        });
+
+        // Line Chart - Daily Booking Count
+        const dailyCtx = document.getElementById('dailyChart');
+        new Chart(dailyCtx, {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.DailyBookings.Select(x => x.Date))),
+                datasets: [{
+                    label: 'Lượt đặt sân',
+                    data: @Html.Raw(Json.Serialize(Model.DailyBookings.Select(x => x.Count))),
+                    fill: true,
+                    backgroundColor: 'rgba(0,123,255,0.1)',
+                    borderColor: '#007bff',
+                    pointBackgroundColor: '#007bff',
+                    tension: 0.3
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                animation: {
+                    duration: 1000,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+    </script>
+}

@@ -1,0 +1,115 @@
+﻿@model BookingSportsField.Models.Facility
+
+@{
+    ViewData["Title"] = "Chi tiết cơ sở";
+}
+
+<h1 class="text-center text-success-emphasis mb-4">CHI TIẾT CƠ SỞ</h1>
+
+<div class="container">
+    <div class="row">
+        <!-- Thông tin cơ sở -->
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body">
+                    <h4 class="card-title text-success">Thông tin cơ sở</h4>
+                    <dl class="row">
+                        <dt class="col-sm-4 text-muted">Tên cơ sở</dt>
+                        <dd class="col-sm-8">@Model.Name</dd>
+
+                        <dt class="col-sm-4 text-muted">Địa chỉ</dt>
+                        <dd class="col-sm-8">@Model.Address</dd>
+
+                        <dt class="col-sm-4 text-muted">Trạng thái</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.IsActive)
+                            {
+                                <span class="badge bg-success">Đang hoạt động</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">Ngừng hoạt động</span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-4 text-muted">Giờ mở cửa</dt>
+                        <dd class="col-sm-8">@Model.OpeningTime.ToString(@"hh\:mm")</dd>
+
+                        <dt class="col-sm-4 text-muted">Giờ đóng cửa</dt>
+                        <dd class="col-sm-8">@Model.ClosingTime.ToString(@"hh\:mm")</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hình ảnh cơ sở -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body">
+                    <h5 class="card-title text-secondary">Hình ảnh cơ sở</h5>
+                    @if (Model.Images != null && Model.Images.Any())
+                    {
+                        <div class="row">
+                            @foreach (var image in Model.Images)
+                            {
+                                <div class="col-4 mb-2">
+                                    <img src="@image.ImageUrl" alt="Facility Image" class="img-fluid rounded" style="height: 150px; object-fit: contain;" />
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">Chưa có hình ảnh.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Đánh giá từ người dùng -->
+    <div class="mt-5">
+        <h4 class="text-success mb-3">Đánh giá từ người dùng</h4>
+        @if (Model.Reviews != null && Model.Reviews.Any())
+        {
+            @foreach (var review in Model.Reviews.OrderByDescending(r => r.CreatedAt))
+            {
+                <div class="card shadow-sm border-0 mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <strong>@review.User?.UserName</strong>
+                            <small class="text-muted">@review.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</small>
+                        </div>
+
+                        <div class="text-warning mb-2">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                if (i <= review.Rating)
+                                {
+                                    <i class="bi bi-star-fill"></i>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-star"></i>
+                                }
+                            }
+                        </div>
+
+                        <p>@review.Comment</p>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <p class="text-muted">Chưa có đánh giá nào cho cơ sở này.</p>
+        }
+    </div>
+
+    <!-- Nút điều hướng -->
+    <div class="mt-4 text-center">
+        <a asp-controller="Field" asp-action="Index" asp-route-facilityId="@Model.Id" class="btn btn-primary mx-2">Xem danh sách sân</a>
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning mx-2">Chỉnh sửa</a>
+        <a asp-action="Index" class="btn btn-secondary mx-2">Quay lại</a>
+    </div>
+</div>

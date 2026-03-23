@@ -1,0 +1,63 @@
+﻿@model BookingSportsField.Models.Facility
+
+@{
+    ViewData["Title"] = "Xóa Cơ Sở";
+}
+
+<div class="container mt-5">
+    <h1 class="text-center text-danger">XÁC NHẬN XÓA CƠ SỞ</h1>
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <h4 class="card-title">Bạn có chắc chắn muốn xóa cơ sở này?</h4>
+            <hr />
+
+            <div class="row mb-3">
+                <div class="col-sm-3 text-muted">
+                    <strong>Tên cơ sở:</strong>
+                </div>
+                <div class="col-sm-9">
+                    <p class="form-control-plaintext">@Model.Name</p>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-sm-3 text-muted">
+                    <strong>Địa chỉ:</strong>
+                </div>
+                <div class="col-sm-9">
+                    <p class="form-control-plaintext">@Model.Address</p>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-sm-3 text-muted">
+                    <strong>Giờ mở cửa:</strong>
+                </div>
+                <div class="col-sm-9">
+                    <p class="form-control-plaintext">@Model.OpeningTime.ToString(@"hh\:mm")</p>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-sm-3 text-muted">
+                    <strong>Giờ đóng cửa:</strong>
+                </div>
+                <div class="col-sm-9">
+                    <p class="form-control-plaintext">@Model.ClosingTime.ToString(@"hh\:mm")</p>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <form asp-action="Delete" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <button type="submit" class="btn btn-danger btn-lg">Xóa Cơ Sở</button>
+                </form>
+            </div>
+
+            <div class="text-center mt-3">
+                <a asp-action="Index" class="btn btn-secondary">Quay lại danh sách</a>
+            </div>
+        </div>
+    </div>
+</div>

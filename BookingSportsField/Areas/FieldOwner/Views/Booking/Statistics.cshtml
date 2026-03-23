@@ -1,0 +1,256 @@
+﻿@using System.Text.Json
+@model BookingSportsField.ViewModels.BookingStatisticsViewModel
+
+<div class="container mt-4">
+    <h2 class="text-success-emphasis text-center  fw-bold mb-4">📊 Thống kê đặt sân</h2>
+
+    <form method="get" class="row g-3 mb-4">
+        <div class="col-md-3">
+            <label class="form-label fw-semibold">Từ ngày:</label>
+            <input type="date" name="fromDate" class="form-control" value="@Model.FromDate.ToString("yyyy-MM-dd")" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label fw-semibold">Đến ngày:</label>
+            <input type="date" name="toDate" class="form-control" value="@Model.ToDate.ToString("yyyy-MM-dd")" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label fw-semibold">Cơ sở:</label>
+            <select name="facilityId" class="form-select">
+                <option value="">-- Tất cả cơ sở --</option>
+                @foreach (var facility in Model.Facilities)
+                {
+                    <option value="@facility.Id" selected="@(facility.Id == Model.SelectedFacilityId)">
+                        @facility.Name
+                    </option>
+                }
+            </select>
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-success w-100">Lọc</button>
+        </div>
+    </form>
+    <h4 class="mt-5 fw-bold text-secondary">📅 Danh sách các lượt đặt trong khoảng thời gian</h4>
+    <table id="bookingsTable" class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>Ngày đặt</th>
+				<th>Cơ sở</th>
+                <th>Sân</th>
+                <th>Giờ</th>
+                <th>Trạng thái</th>
+                <th>Giá (VND)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Bookings.Count; i++)
+            {
+                var b = Model.Bookings[i];
+                <tr>
+                    <td>@(i + 1)</td>
+                    <td>@b.BookingDate.ToString("dd/MM/yyyy")</td>
+                    <td>@b.Field?.Facility.Name</td>
+                    <td>@b.Field?.Name</td>
+                    <td>@b.StartTime.ToString(@"hh\:mm") - @b.EndTime.ToString(@"hh\:mm")</td>
+                    <td>
+                        @switch (b.Status)
+                        {
+                            case BookingStatus.Confirmed:
+                                @:<span class="badge bg-success-subtle">Đã xác nhận</span>
+                                break;
+                            case BookingStatus.Cancelled:
+                                @:<span class="badge bg-danger">Đã huỷ</span>
+                                break;
+							case BookingStatus.Pending:
+								@:<span class="badge bg-secondary">Chờ xác nhận</span>
+								break;
+							case BookingStatus.Completed:
+								@:<span class="badge bg-success">Đã hoàn thành</span>
+								break;
+							case BookingStatus.NoShow:
+							    @:<span class="badge bg-warning text-dark">Không nhận sân</span>
+								break;
+                            default:
+                                @:<span class="badge bg-secondary">Chưa xử lý</span>
+                                break;
+                        }
+                    </td>
+                    <td>@b.TotalPrice.ToString("N0")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card text-white bg-info mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Tổng số lượt đặt</h5>
+                    <p class="card-text fs-4">@Model.TotalBookings</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Đặt thành công</h5>
+                    <p class="card-text fs-4">@Model.TotalConfirmed</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-danger mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Không thành công</h5>
+                    <p class="card-text fs-4">@Model.TotalCancelled</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Tổng doanh thu</h5>
+                    <p class="card-text fs-4">@Model.TotalRevenue.ToString("N0") VND</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-5">
+        <div class="col-md-6">
+            <h4 class="fw-bold text-secondary text-center">📈 Tỷ lệ lượt đặt</h4>
+            <canvas id="bookingStatusChart" style="max-height: 400px;"></canvas>
+        </div>
+        <div class="col-md-6">
+            <h4 class="fw-bold text-secondary text-center">💰 Doanh thu theo ngày</h4>
+            <canvas id="revenueChart" style="max-height: 400px;"></canvas>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    @{
+        // Chuyển ChartData từ C# sang JavaScript
+        var bookingsJson = JsonSerializer.Serialize(Model.ChartData);
+    }
+    <script>
+        const bookings = @Html.Raw(bookingsJson);
+    </script>
+    <script>
+        $(document).ready(function () {
+            $('#bookingsTable').DataTable({
+                language: {
+                    "sProcessing": "Đang xử lý...",
+                    "sLengthMenu": "Hiển thị _MENU_ mục",
+                    "sZeroRecords": "Không tìm thấy dòng nào phù hợp",
+                    "sInfo": "Đang hiển thị _START_ đến _END_ trong tổng số _TOTAL_ mục",
+                    "sInfoEmpty": "Đang hiển thị 0 đến 0 trong tổng số 0 mục",
+                    "sInfoFiltered": "(được lọc từ _MAX_ mục)",
+                    "sSearch": "Tìm kiếm:",
+                    "oPaginate": {
+                        "sFirst": "Đầu",
+                        "sPrevious": "Trước",
+                        "sNext": "Tiếp",
+                        "sLast": "Cuối"
+                    }
+                }
+            });
+            // Xử lý dữ liệu từ Model.ChartData (đã serialize thành biến JS "bookings")
+            const statusLabels = {
+                0: "Chờ xác nhận",
+                1: "Đã xác nhận",
+                2: "Đã huỷ",
+                3: "Đã hoàn thành",
+                4: "Không nhận sân"
+            };
+
+            // 1. Tính số lượt đặt theo trạng thái
+            const statusCounts = bookings.reduce((acc, b) => {
+                acc[b.Status] = (acc[b.Status] || 0) + 1;
+                return acc;
+            }, {});
+
+            const labels = Object.values(statusLabels);
+            const dataStatus = labels.map(label => {
+                const key = Object.keys(statusLabels).find(k => statusLabels[k] === label);
+                return statusCounts[key] || 0;
+            });
+
+            // 2. Tính doanh thu theo ngày
+            const revenueByDate = bookings.filter(b => b.Status === 3).reduce((acc, b) => {
+                const date = new Date(b.BookingDate);
+                const dayKey = date.toLocaleDateString('vi-VN'); // "dd/MM/yyyy"
+                acc[dayKey] = (acc[dayKey] || 0) + b.TotalPrice;
+                return acc;
+            }, {});
+
+            const revenueLabels = Object.keys(revenueByDate).sort((a,b) => {
+                const [d1,m1,y1] = a.split('/');
+                const [d2,m2,y2] = b.split('/');
+                return new Date(y1, m1-1, d1) - new Date(y2, m2-1, d2);
+            });
+
+            const dataRevenue = revenueLabels.map(date => revenueByDate[date]);
+
+            // 3. Khởi tạo biểu đồ tỷ lệ lượt đặt
+            const ctxStatus = document.getElementById('bookingStatusChart').getContext('2d');
+            new Chart(ctxStatus, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Số lượt đặt',
+                        data: dataStatus,
+                        backgroundColor: [
+                            '#6c757d', '#CCFFCC', '#dc3545',
+                            '#198754', '#0d6efd'
+                        ],
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                    }
+                }
+            });
+
+            // 4. Khởi tạo biểu đồ doanh thu theo ngày
+            const ctxRevenue = document.getElementById('revenueChart').getContext('2d');
+            new Chart(ctxRevenue, {
+                type: 'line',
+                data: {
+                    labels: revenueLabels,
+                    datasets: [{
+                        label: 'Doanh thu (VND)',
+                        data: dataRevenue,
+                        borderColor: '#198754',
+                        backgroundColor: 'rgba(25, 135, 84, 0.2)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 3,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString('vi-VN') + ' VND';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'top' },
+                    }
+                }
+            });
+        });
+    </script>
+}

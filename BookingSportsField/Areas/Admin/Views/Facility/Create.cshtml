@@ -1,0 +1,94 @@
+﻿@model BookingSportsField.Models.Facility
+
+@{
+    ViewData["Title"] = "Create Facility";
+}
+
+<h2 class="text-center text-dark mb-4">TẠO CƠ SỞ MỚI</h2>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <form asp-action="Create" enctype="multipart/form-data" class="p-4 bg-white shadow rounded">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <!-- Facility Name -->
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label fw-bold">Tên Cơ Sở</label>
+                    <input asp-for="Name" class="form-control" placeholder="e.g. Sân bóng ACB" />
+                    <span asp-validation-for="Name" class="text-danger small"></span>
+                </div>
+
+                <!-- Address -->
+                <div class="mb-3">
+                    <label asp-for="Address" class="form-label fw-bold">Địa chỉ</label>
+                    <input asp-for="Address" class="form-control" placeholder="e.g. 123 Nguyễn Huệ, Q.1" />
+                    <span asp-validation-for="Address" class="text-danger small"></span>
+                </div>
+
+                <!-- Opening Time -->
+                <div class="mb-3">
+                    <label asp-for="OpeningTime" class="form-label fw-bold">Giờ Mở Cửa</label>
+                    <input asp-for="OpeningTime" type="time" class="form-control" />
+                    <span asp-validation-for="OpeningTime" class="text-danger small"></span>
+                </div>
+
+                <!-- Closing Time -->
+                <div class="mb-3">
+                    <label asp-for="ClosingTime" class="form-label fw-bold">Giờ Đóng Cửa</label>
+                    <input asp-for="ClosingTime" type="time" class="form-control" />
+                    <span asp-validation-for="ClosingTime" class="text-danger small"></span>
+                </div>
+
+                <!-- Upload Images -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Ảnh Cơ Sở</label>
+                    <input asp-for="UploadImages" class="form-control" type="file" multiple accept="image/*" onchange="previewImages(event)" />
+                    <small class="text-muted">Bạn có thể chọn nhiều ảnh (JPG, PNG...)</small>
+                </div>
+
+                <!-- Image Preview -->
+                <div class="mb-3" id="imagePreviewContainer">
+                    <p><strong>Xem trước ảnh:</strong></p>
+                    <div id="imagePreview" class="d-flex gap-2">
+                        <!-- Preview images will appear here -->
+                    </div>
+                </div>
+
+                <!-- Submit button -->
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-success btn-lg">Tạo Cơ Sở</button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">Quay lại danh sách cơ sở</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+
+    <script>
+        function previewImages(event) {
+            const imagePreviewContainer = document.getElementById("imagePreview");
+            imagePreviewContainer.innerHTML = "";  // Clear previous previews
+
+            const files = event.target.files;
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    const img = document.createElement("img");
+                    img.src = e.target.result;
+                    img.classList.add("img-thumbnail", "preview-img");
+                    img.style.maxWidth = "150px";
+                    img.style.maxHeight = "150px";
+                    imagePreviewContainer.appendChild(img);
+                };
+
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+}

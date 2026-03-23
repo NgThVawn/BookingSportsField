@@ -1,0 +1,45 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build project (may need IIS Express stop)",
+			"type": "shell",
+			"command": "dotnet build",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": [
+				"$msbuild"
+			]
+		},
+		{
+			"label": "Build after modal fix",
+			"type": "shell",
+			"command": "dotnet build",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": [
+				"$msbuild"
+			]
+		},
+		{
+			"label": "Build owner view updates",
+			"type": "shell",
+			"command": "dotnet build",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": [
+				"$msbuild"
+			]
+		},
+		{
+			"label": "Build with latest bookings pagination",
+			"type": "shell",
+			"command": "dotnet build",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": [
+				"$msbuild"
+			]
+		}
+	]
+}

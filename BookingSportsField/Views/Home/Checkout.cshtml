@@ -1,0 +1,91 @@
+﻿@model BookingSportsField.Models.Booking
+@using BookingSportsField.Models
+
+@{
+    ViewData["Title"] = "Xác nhận đặt sân";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-success text-white">
+                    <h4 class="text-center mb-0">Xác nhận thông tin đặt sân</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Thông tin cơ sở -->
+                    <div class="mb-4">
+                        <h5 class="text-uppercase text-muted">Thông tin cơ sở</h5>
+                        <p><strong>Tên cơ sở:</strong> @Model.Field.Facility.Name</p>
+                        <p><strong>Địa chỉ:</strong> @Model.Field.Facility.Address</p>
+                        <p>
+                            <strong>Giờ hoạt động:</strong>
+                            @Model.Field.Facility.OpeningTime.ToString(@"hh\:mm") -
+                            @Model.Field.Facility.ClosingTime.ToString(@"hh\:mm")
+                        </p>
+                    </div>
+
+                    <!-- Thông tin sân -->
+                    <div class="mb-4">
+                        <h5 class="text-uppercase text-muted">Thông tin sân</h5>
+                        <p><strong>Tên sân:</strong> @Model.Field.Name</p>
+                        <p><strong>Loại sân:</strong> @Model.Field.Type.GetDisplayName()</p>
+                        <p><strong>Ngày:</strong> @Model.BookingDate.ToString("dd/MM/yyyy")</p>
+                        <p>
+                            <strong>Khung giờ:</strong>
+                            @Model.StartTime.ToString(@"hh\:mm") - @Model.EndTime.ToString(@"hh\:mm")
+                        </p>
+                        <p>
+                            <strong class="text-danger">Tổng tiền:</strong>
+                            <span class="text-danger fw-bold">@Model.TotalPrice.ToString("N0") VND</span>
+                        </p>
+                    </div>
+
+                    <!-- Form thanh toán -->
+                    <form method="post" action="@Url.Action("Checkout", "Home")">
+                        <input type="hidden" name="bookingId" value="@Model.Id" />
+
+                        <div class="mb-4">
+                            <label class="form-label"><strong>Phương thức thanh toán:</strong></label>
+                            <div class="row row-cols-2 g-3">
+                                <div class="col">
+                                    <label class="w-100 border rounded p-2 text-center payment-option" style="cursor:pointer">
+                                        <input type="radio" class="d-none" name="paymentMethod" value="COD" />
+                                        <img src="/images/cod.png" alt="COD" class="img-fluid" style="max-height:50px;" />
+                                        <div class="mt-2">Thanh toán khi đến</div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-check-circle-fill"></i> Xác nhận đặt sân
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card-footer text-end">
+                    <a href="@Url.Action("Booking", "Home", new { id = @Model.Field.FacilityId })" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left-circle"></i> Quay lại
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Tô sáng lựa chọn
+        const options = document.querySelectorAll('.payment-option');
+        options.forEach(option => {
+            option.addEventListener('click', () => {
+                options.forEach(o => o.classList.remove('border-success'));
+                option.classList.add('border-success');
+                option.querySelector('input').checked = true;
+            });
+        });
+    </script>
+}

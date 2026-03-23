@@ -1,0 +1,649 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - BookingSportsField</title>
+	<link href="~/css/site.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/BookingSportsField.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        /* Notification dropdown */
+        .notify-dropdown {
+            width: 380px;
+            max-height: 500px;
+            overflow: hidden;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+            background: #fff;
+            min-width: 0;
+        }
+        .notify-header {
+            padding: 14px 16px;
+            background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
+            color: white;
+            border-bottom: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            border-radius: 12px 12px 0 0;
+        }
+        .notify-header .fw-semibold {
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .notify-body {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .notify-body::-webkit-scrollbar {
+            width: 6px;
+        }
+        .notify-body::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .notify-body::-webkit-scrollbar-thumb {
+            background: #1abc9c;
+            border-radius: 3px;
+        }
+        .notify-item {
+            padding: 12px 14px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            position: relative;
+        }
+        .notify-item:last-child {
+            border-bottom: none;
+        }
+        .notify-item:hover {
+            background-color: #f8fffe;
+            transform: translateX(4px);
+        }
+        .notify-item.unread {
+            background-color: #e8f8f5;
+            border-left: 4px solid #1abc9c;
+        }
+        .notify-item.unread:hover {
+            background-color: #d5f3f0;
+        }
+        .notify-item.new-notification {
+            animation: highlightPulse 0.6s ease;
+        }
+        .notify-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #f39c12;
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+        .notify-icon {
+            font-size: 20px;
+            min-width: 24px;
+            text-align: center;
+        }
+        .notify-content {
+            flex-grow: 1;
+            min-width: 0;
+        }
+        .notify-message {
+            font-size: 13px;
+            color: #2c3e50;
+            line-height: 1.4;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        .notify-time {
+            font-size: 11px;
+            color: #95a5a6;
+            margin-top: 4px;
+        }
+        .notify-empty {
+            padding: 40px 20px;
+            text-align: center;
+            color: #95a5a6;
+            font-size: 14px;
+        }
+
+        /* Toast stack bottom-right */
+        #notifyToastStack {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 380px;
+        }
+        .notify-toast {
+            min-width: 300px;
+            max-width: 380px;
+            background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
+            color: #fff;
+            border-radius: 10px;
+            padding: 14px 16px;
+            box-shadow: 0 8px 24px rgba(26, 188, 156, 0.25);
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            animation: slideInRight 0.35s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            border-left: 4px solid #f39c12;
+        }
+        .notify-toast .icon {
+            font-size: 22px;
+            min-width: 24px;
+            flex-shrink: 0;
+        }
+        .notify-toast .content {
+            flex-grow: 1;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .notify-toast .close-btn {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.8);
+            opacity: 0.8;
+            cursor: pointer;
+            padding: 0;
+            min-width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .notify-toast .close-btn:hover {
+            opacity: 1;
+        }
+
+        /* Animations */
+        @@keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        @@keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+        @@keyframes highlightPulse {
+            0% {
+                background-color: #fff3cd;
+            }
+            100% {
+                background-color: #e8f8f5;
+            }
+        }
+
+        /* Notification bell pulse when unread */
+        #notificationBtn:has(#notifyCount:not(:empty)) {
+            animation: bellShake 0.5s ease;
+        }
+        @@keyframes bellShake {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-8deg); }
+            75% { transform: rotate(8deg); }
+        }
+
+        /* Buttons styling */
+        .notify-header .btn {
+            font-size: 12px;
+            padding: 4px 10px;
+            min-width: auto;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: white;
+            transition: all 0.2s ease;
+        }
+        .notify-header .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.6);
+            color: white;
+        }
+    </style>
+    @RenderSection("Styles", required: false)
+</head>
+<body data-role="@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value">
+    <header style="position: fixed; top: 0; width: 100%; z-index: 1030;">
+        <nav class="navbar navbar-expand-lg navbar-light bg-success border-bottom shadow-sm">
+            <div class="container-fluid d-flex align-items-center justify-content-between">
+
+                <!-- Logo -->
+                <a asp-area="" asp-controller="Home" asp-action="Index" class="d-flex align-items-center text-decoration-none">
+                    <img src="~/images/5.png" alt="Logo" width="64" height="64" class="me-2" style="object-fit: cover;">
+                    <span class="fw-bold text-white fs-3">THVL Booking      </span>
+                </a>
+
+                <!-- Nút toggle mobile -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Menu phải -->
+                <div class="collapse navbar-collapse justify-content-end align-items-center" id="navbarContent">
+                    <div class="d-flex align-items-center gap-2">
+                        <!-- Login / Logout -->
+                        <partial name="_LoginPartial" />
+
+                        <!-- 🔔 Icon thông báo -->
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <div class="position-relative">
+                                <button id="notificationBtn"
+                                        class="btn btn-light rounded-circle d-flex align-items-center justify-content-center"
+                                        type="button"
+                                        aria-expanded="false"
+                                        aria-haspopup="true"
+                                        aria-label="Mở thông báo"
+                                        style="width:40px;height:40px;border:none;">
+                                    <span class="visually-hidden">Thông báo</span>
+                                    <i class="bi bi-bell-fill text-danger fs-5" aria-hidden="true"></i>
+                                    <span id="notifyCount"
+                                          class="position-absolute translate-middle badge rounded-pill bg-warning"
+                                          style="top:6px; right:6px;">
+                                        0
+                                    </span>
+                                </button>
+
+                                <!-- Dropdown thông báo -->
+                                <div id="notifyBox"
+                                     class="p-0 notify-dropdown"
+                                     aria-labelledby="notificationBtn"
+                                     style="position: absolute; top: 100%; right: 0; margin-top: 8px; display: none; z-index: 1050;">
+                                    <div class="notify-header">
+                                        <span class="fw-semibold">🔔 Thông báo</span>
+                                        <div class="d-flex gap-2">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" id="markAllReadBtn">Đánh dấu đã đọc</button>
+                                            <button type="button" class="btn btn-sm btn-light" id="refreshNotifyBtn" title="Làm mới"><i class="bi bi-arrow-clockwise"></i></button>
+                                        </div>
+                                    </div>
+                                    <div id="notifyState" class="notify-empty">Đang tải thông báo...</div>
+                                    <ul id="notifyList" class="list-group list-group-flush notify-body" role="listbox"></ul>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+
+    <main class="flex-grow-1">
+        <div class="container mt-4">
+            @RenderBody()
+        </div>
+    </main>
+
+    <footer class="bg-success text-white pt-5 pb-3">
+        <div class="container">
+            <div class="row">
+                <!-- Cột 1: Giới thiệu -->
+                <div class="col-md-3">
+                    <h5 class="fw-bold">BookingSportsField</h5>
+                    <p class="small">Nền tảng đặt sân thể thao tiện lợi, nhanh chóng và uy tín. Kết nối người chơi với hàng trăm cơ sở sân chất lượng trên toàn quốc.</p>
+                    <p class="small"><i class="bi bi-geo-alt-fill"></i> 456 Nguyễn Văn Cừ, Quận 5, TP.HCM</p>
+                    <p class="small"><i class="bi bi-telephone-fill"></i> Hotline: 1900 8888</p>
+                    <p class="small"><i class="bi bi-envelope-fill"></i> Email: support@bookingsports.vn</p>
+                </div>
+
+                <!-- Cột 2: Hỗ trợ -->
+                <div class="col-md-3">
+                    <h5 class="fw-bold">Hỗ Trợ Người Dùng</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-white text-decoration-none">Hướng dẫn đặt sân</a></li>
+                        <li><a href="#" class="text-white text-decoration-none">Chính sách hủy đặt</a></li>
+                        <li><a href="#" class="text-white text-decoration-none">Câu hỏi thường gặp</a></li>
+                        <li><a href="#" class="text-white text-decoration-none">Liên hệ hỗ trợ</a></li>
+                        <li><a href="#" class="text-white text-decoration-none">Chính sách bảo mật</a></li>
+                    </ul>
+                </div>
+
+                <!-- Cột 3: Thanh toán & Hợp tác -->
+                <div class="col-md-3">
+                    <h5 class="fw-bold">Thanh Toán & Hợp Tác</h5>
+                    <p class="mt-3 small">Bạn là chủ sân? <a href="#" class="text-dark text-decoration-none">Đăng ký hợp tác ngay</a></p>
+                </div>
+
+                <!-- Cột 4: Mạng xã hội -->
+                <div class="col-md-3">
+                    <h5 class="fw-bold">Kết Nối Với Chúng Tôi</h5>
+                    <p class="small">Theo dõi để nhận thông tin sân mới, ưu đãi & giải đấu thể thao hấp dẫn.</p>
+                    <div class="d-flex gap-3">
+                        <a href="#" class="text-white fs-4"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="text-white fs-4"><i class="bi bi-instagram"></i></a>
+                        <a href="#" class="text-white fs-4"><i class="bi bi-youtube"></i></a>
+                        <a href="#" class="text-white fs-4"><i class="bi bi-tiktok"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dòng bản quyền -->
+            <div class="text-center mt-4 border-top pt-3">
+                <p class="mb-0 small">&copy; 2025 BookingSportsField. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+
+    <div id="notifyToastStack" aria-live="polite" aria-atomic="true"></div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const btn = document.getElementById("notificationBtn");
+            const box = document.getElementById("notifyBox");
+            const list = document.getElementById("notifyList");
+            const state = document.getElementById("notifyState");
+            const count = document.getElementById("notifyCount");
+            const markAllBtn = document.getElementById("markAllReadBtn");
+            const refreshBtn = document.getElementById("refreshNotifyBtn");
+            const toastStack = document.getElementById("notifyToastStack");
+
+            // Toast function - defined early so SignalR can use it
+            function showToast(text) {
+                const stack = document.getElementById("notifyToastStack");
+                if (!stack) {
+                    console.warn("⚠ Toast stack not found");
+                    return;
+                }
+                
+                // Extract icon from text
+                let icon = '🔔';
+                const emojiMatch = text.match(/^[\u{1F300}-\u{1F9FF}]/u);
+                if (emojiMatch) {
+                    icon = emojiMatch[0];
+                }
+                
+                const toast = document.createElement('div');
+                toast.className = 'notify-toast';
+                toast.innerHTML = `
+                    <span class="icon">${icon}</span>
+                    <div class="content">${text}</div>
+                    <button class="close-btn" aria-label="Đóng" onclick="this.parentElement.remove()">✕</button>
+                `;
+                stack.appendChild(toast);
+                setTimeout(() => toast.remove(), 5000);
+            }
+
+            let notifyCount = 0;
+            const apiList = "/Notifications/List";
+            const apiMarkRead = "/Notifications/MarkAsRead";
+            const apiMarkAllRead = "/Notifications/MarkAllRead";
+            const goBase = "/Notifications/Go/";
+            const pageSize = 10;
+            let currentSkip = 0;
+            let hasMore = true;
+            let unreadCountServer = 0;
+
+            let loadingMore = false;
+
+            function setLoading(isLoading) {
+                loadingMore = isLoading;
+                const spinner = document.getElementById('notifyLoadMoreSpinner');
+                if (spinner) {
+                    spinner.style.display = isLoading ? 'inline-block' : 'none';
+                }
+                const loadMoreBtn = document.getElementById('notifyLoadMore');
+                if (loadMoreBtn) {
+                    loadMoreBtn.disabled = isLoading;
+                }
+            }
+
+            async function fetchNotifications(reset = false) {
+                if (loadingMore) return;
+                if (reset) {
+                    currentSkip = 0;
+                    hasMore = true;
+                    unreadCountServer = 0;
+                    list.innerHTML = "";
+                }
+                if (!hasMore) return;
+                setLoading(true);
+                try {
+                    const res = await fetch(`${apiList}?skip=${currentSkip}&take=${pageSize}`, { credentials: 'same-origin' });
+                    const data = await res.json();
+                    unreadCountServer = data.unreadCount ?? unreadCountServer;
+                    renderList(data.items, reset, unreadCountServer);
+                    hasMore = data.hasMore;
+                    toggleLoadMore();
+                    currentSkip += pageSize;
+                } catch (e) {
+                    state.textContent = "Không tải được thông báo.";
+                    console.error(e);
+                } finally {
+                    setLoading(false);
+                }
+            }
+
+            function renderList(items, reset, unreadFromServer) {
+                if (reset) list.innerHTML = "";
+                if (!items || items.length === 0) {
+                    if (list.children.length === 0) {
+                        state.innerHTML = '<i class="bi bi-inbox" style="font-size: 32px; color: #ddd;"></i><div style="margin-top: 10px;">Chưa có thông báo</div>';
+                        state.style.display = "block";
+                        count.style.display = "none";
+                    }
+                    return;
+                }
+                state.style.display = "none";
+                const existingUnread = [...list.children].filter(li => li.classList.contains('unread')).length;
+                const incomingUnread = items.filter(i => !i.isRead).length;
+                const unreadTotal = Math.max(unreadFromServer ?? 0, existingUnread + incomingUnread);
+                if (unreadTotal > 0) {
+                    count.innerText = unreadTotal;
+                    count.style.display = 'inline-block';
+                } else {
+                    count.style.display = 'none';
+                }
+
+                items.forEach(i => {
+                    const li = document.createElement("li");
+                    li.className = `list-group-item notify-item d-flex gap-2 align-items-flex-start ${i.isRead ? '' : 'unread'}`;
+                    li.setAttribute("role", "option");
+                    
+                    // Extract icon from message (first emoji or character)
+                    let icon = '🔔';
+                    const emojiMatch = i.message?.match(/^[\u{1F300}-\u{1F9FF}]/u);
+                    if (emojiMatch) {
+                        icon = emojiMatch[0];
+                    }
+                    
+                    li.innerHTML = `
+                        <span class="notify-icon" title="${i.isRead ? 'Đã đọc' : 'Chưa đọc'}">${icon}</span>
+                        <div class="notify-content">
+                            <div class="notify-message">${i.message || 'Thông báo'}</div>
+                            <div class="notify-time">${new Date(i.createdAt).toLocaleString('vi-VN')}</div>
+                        </div>
+                        ${!i.isRead ? '<span class="notify-dot"></span>' : ''}
+                        <a class="stretched-link" href="${goBase + i.id}"></a>
+                    `;
+                    li.addEventListener('click', async () => {
+                        await markAsRead(i.id);
+                        window.location.href = goBase + i.id;
+                    });
+                    list.appendChild(li);
+                });
+            }
+
+            function toggleLoadMore() {
+                const btn = document.getElementById('notifyLoadMore');
+                if (!btn) return;
+                btn.style.display = hasMore ? 'block' : 'none';
+            }
+
+            async function markAsRead(id) {
+                try {
+                    await fetch(apiMarkRead, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                        body: new URLSearchParams({ id })
+                    });
+                } catch (e) {
+                    console.error('Mark read failed', e);
+                }
+            }
+
+            async function markAllRead() {
+                try {
+                    await fetch(apiMarkAllRead, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }
+                    });
+                    await fetchNotifications();
+                } catch (e) {
+                    console.error('Mark all read failed', e);
+                }
+            }
+
+            /* ========== SignalR ========== */
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("/bookingHub")
+                .withAutomaticReconnect()
+                .build();
+
+            connection.start()
+                .then(() => {
+                    console.log("✅ SignalR connected");
+
+                    const role = document.body.dataset.role;
+                    if (role) {
+                        connection.invoke("JoinRoleGroup", role)
+                            .catch(err => console.error("❌ Failed to join role group:", err));
+                    }
+                })
+                .catch(err => console.error("❌ SignalR connection error:", err));
+
+            connection.onreconnected(() => {
+                console.log("🔁 SignalR reconnected");
+                const role = document.body.dataset.role;
+                if (role) {
+                    connection.invoke("JoinRoleGroup", role)
+                        .catch(err => console.error("❌ Failed to rejoin role group:", err));
+                }
+            });
+
+            connection.onclose(() => {
+                console.warn("⚠️ SignalR disconnected, attempting restart...");
+                setTimeout(() => connection.start().catch(err => console.error("❌ Reconnect failed:", err)), 1000);
+            });
+
+            connection.on("ReceiveNotification", async function (message) {
+                console.log("📬 Received notification:", message);
+                showToast(message);
+                
+                // Auto-refresh notification list if dropdown is open
+                if (box && box.style.display === 'block' && list) {
+                    console.log("🔄 Refreshing notification list (dropdown is open)");
+                    await fetchNotifications(true);
+                } else if (btn && list) {
+                    // If dropdown is closed, just update unread count
+                    const countRes = await fetch(`${apiList}?skip=0&take=1`, { credentials: 'same-origin' });
+                    const data = await countRes.json();
+                    if (data.unreadCount > 0) {
+                        count.innerText = data.unreadCount;
+                        count.style.display = 'inline-block';
+                    }
+                }
+            });
+
+            /* ========== UI EVENTS ========== */
+            if (!btn || !box || !list || !state || !count) {
+                console.warn("⚠ Notification UI not available (user may not be logged in)");
+                return;
+            }
+
+            btn.addEventListener("click", function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const isOpen = box.style.display === "block";
+                box.style.display = isOpen ? "none" : "block";
+                btn.setAttribute('aria-expanded', !isOpen);
+                if (!isOpen) {
+                    fetchNotifications();
+                }
+            });
+
+            // Close dropdown when clicking on list items or outside
+            if (list) {
+                list.addEventListener("click", function (e) {
+                    e.stopPropagation();
+                });
+            }
+
+            // Close when clicking outside
+            document.addEventListener("click", function (e) {
+                if (box && btn && !box.contains(e.target) && !btn.contains(e.target)) {
+                    box.style.display = "none";
+                    btn.setAttribute('aria-expanded', 'false');
+                }
+            });
+
+            // Prevent dropdown from closing when clicking inside it
+            if (box) {
+                box.addEventListener("click", function (e) {
+                    e.stopPropagation();
+                });
+            }
+
+            if (markAllBtn) {
+                markAllBtn.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    markAllRead();
+                });
+            }
+
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    fetchNotifications(true);
+                });
+            }
+
+            const loadMoreBtn = document.createElement('button');
+            loadMoreBtn.id = 'notifyLoadMore';
+            loadMoreBtn.className = 'btn btn-light w-100 border-0 py-2';
+            loadMoreBtn.textContent = 'Tải thêm';
+            loadMoreBtn.style.display = 'none';
+            loadMoreBtn.addEventListener('click', () => fetchNotifications(false));
+            const spinner = document.createElement('span');
+            spinner.id = 'notifyLoadMoreSpinner';
+            spinner.className = 'spinner-border spinner-border-sm ms-2';
+            spinner.setAttribute('role', 'status');
+            spinner.style.display = 'none';
+            loadMoreBtn.appendChild(spinner);
+            box?.appendChild(loadMoreBtn);
+
+            // Initial fetch
+            fetchNotifications(true);
+        });
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,154 @@
+﻿@page
+@model RegisterModel
+@{
+    ViewData["Title"] = "Đăng ký tài khoản";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <section class="register-form p-4 shadow-sm rounded bg-light">
+                <h3 class="text-center mb-4">@ViewData["Title"]</h3>
+
+                <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+
+                    <!-- Full Name Field -->
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.FullName" class="form-control" placeholder="Nhập tên đầy đủ" />
+                        <label asp-for="Input.FullName">Tên đầy đủ</label>
+                        <span asp-validation-for="Input.FullName" class="text-danger"></span>
+                    </div>
+
+                    <!-- Phone Number Field -->
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.PhoneNumber" class="form-control" placeholder="Nhập số điện thoại" />
+                        <label asp-for="Input.PhoneNumber">Số điện thoại</label>
+                        <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+                    </div>
+
+                    <!-- Email Field -->
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                        <label asp-for="Input.Email">Email</label>
+                        <span asp-validation-for="Input.Email" class="text-danger"></span>
+                    </div>
+
+                    <!-- Address Field -->
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.Address" class="form-control" placeholder="Nhập địa chỉ của bạn" />
+                        <label asp-for="Input.Address">Địa chỉ</label>
+                        <span asp-validation-for="Input.Address" class="text-danger"></span>
+                    </div>
+
+                    <!-- Date of Birth Field -->
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.DateOfBirth" class="form-control" type="date" min="@DateTime.Now.AddYears(-100).ToString("yyyy-MM-dd")" max="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                        <label asp-for="Input.DateOfBirth">Ngày sinh</label>
+                        <span asp-validation-for="Input.DateOfBirth" class="text-danger"></span>
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="Mật khẩu" />
+                        <label asp-for="Input.Password">Mật khẩu</label>
+                        <span asp-validation-for="Input.Password" class="text-danger"></span>
+                    </div>
+
+                    <!-- Confirm Password Field -->
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="Xác nhận mật khẩu" />
+                        <label asp-for="Input.ConfirmPassword">Xác nhận mật khẩu</label>
+                        <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                    </div>
+
+                    <!-- Role Dropdown -->
+                    <div class="form-floating mb-3">
+                        <select asp-for="Input.Role" asp-items="Model.Input.RoleList" class="form-control">
+                            <option value="">Chọn vai trò</option>
+                        </select>
+                        <label asp-for="Input.Role">Vai trò</label>
+                        <span asp-validation-for="Input.Role" class="text-danger"></span>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div>
+                        <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-success mt-3">Đăng ký</button>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </div>
+
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-6">
+            <section class="external-login">
+                <h4 class="text-center mb-4">Đăng ký qua dịch vụ khác</h4>
+                @if ((Model.ExternalLogins?.Count ?? 0) == 0)
+                {
+                    <div class="alert alert-info text-center">
+                        <p>Hiện tại chưa có dịch vụ đăng ký ngoài hệ thống. Bạn có thể thiết lập để hỗ trợ đăng ký qua các dịch vụ bên ngoài.</p>
+                    </div>
+                }
+                else
+                {
+                    @* <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                        <div class="d-flex justify-content-center">
+                            @foreach (var provider in Model.ExternalLogins)
+                            {
+                                <button type="submit" class="btn btn-outline-primary mx-2" name="provider" value="@provider.Name" title="Đăng ký qua tài khoản @provider.DisplayName">@provider.DisplayName</button>
+                            }
+                        </div>
+                    </form> *@
+                    <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                        <div class="d-flex justify-content-center flex-wrap gap-3">
+                            @foreach (var provider in Model.ExternalLogins)
+                            {
+                                // Icon
+                                var iconClass = provider.Name switch
+                                {
+                                    "Google" => "bi bi-google",
+                                    "Facebook" => "bi bi-facebook",
+                                    "Microsoft" => "bi bi-microsoft",
+                                    _ => "bi bi-person-circle"
+                                };
+
+                                // Màu nút
+                                var buttonClass = provider.Name switch
+                                {
+                                    "Google" => "btn-danger",
+                                    "Facebook" => "btn-primary",
+                                    "Microsoft" => "btn-secondary",
+                                    _ => "btn-outline-dark"
+                                };
+
+                                <button type="submit"
+                                        class="btn @buttonClass d-flex align-items-center gap-2 px-4 py-2 shadow-sm rounded-pill"
+                                        name="provider"
+                                        value="@provider.Name"
+                                        title="Đăng nhập bằng @provider.DisplayName">
+                                    <i class="@iconClass fs-5"></i> Đăng nhập bằng @provider.DisplayName
+                                </button>
+                            }
+
+                        </div>
+                    </form>
+                }
+            </section>
+        </div>
+    </div>
+</div>
+<style>
+    button[name="provider"] {
+        transition: transform 0.2s ease-in-out;
+    }
+
+        button[name="provider"]:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+</style>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

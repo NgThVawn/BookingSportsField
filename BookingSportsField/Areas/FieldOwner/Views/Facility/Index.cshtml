@@ -1,0 +1,112 @@
+﻿@model IEnumerable<BookingSportsField.Models.Facility>
+@{
+    ViewData["Title"] = "Danh sách cơ sở";
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+<div class="container mt-4">
+    <h2 class="text-center text-success-emphasis mb-4">DANH SÁCH CƠ SỞ</h2>
+
+    <div class="card shadow-lg p-3">
+        <table id="facilityTable" class="table table-striped table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Tên cơ sở</th>
+                    <th style ="width: 200px;">Địa chỉ</th>
+                    <th>Trạng thái duyệt</th>
+                    <th>Hoạt động</th>
+                    <th>Giờ mở cửa</th>
+                    <th>Giờ đóng cửa</th>
+                    <th class="text-center">Chức năng</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td class="fw-bold">@item.Name</td>
+                        <td>@item.Address</td>
+                        <td>
+                            @switch (item.ApprovalStatus)
+                            {
+                                case ApprovalStatus.Pending:
+                                    <span class="badge bg-warning text-dark">Chờ duyệt</span>
+                                    break;
+                                case ApprovalStatus.Accepted:
+                                    <span class="badge bg-success">Đã duyệt</span>
+                                    break;
+                                case ApprovalStatus.Rejected:
+                                    <span class="badge bg-danger">Từ chối</span>
+                                    break;
+                                default:
+                                    <span class="badge bg-secondary">Không rõ</span>
+                                    break;
+                            }
+                        </td>
+
+                        <!-- Trạng thái hoạt động -->
+                        <td>
+                            @if (item.IsActive)
+                            {
+                                <span class="badge bg-primary">Đang hoạt động</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Tạm ngưng</span>
+                            }
+                        </td>
+                        <td>@item.OpeningTime.ToString(@"hh\:mm")</td>
+                        <td>@item.ClosingTime.ToString(@"hh\:mm")</td>
+                        <td class="text-center">
+                            <a class="btn btn-info btn-sm" asp-action="Edit" asp-route-id="@item.Id">Sửa</a>
+                            <a class="btn btn-primary btn-sm" asp-action="Details" asp-route-id="@item.Id">Chi tiết</a>
+                            <a class="btn btn-danger btn-sm" asp-action="Delete" asp-route-id="@item.Id">Xóa</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <a class="btn btn-dark fw-bold mt-4 w-100" asp-action="Create">Thêm cơ sở mới</a>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#facilityTable').DataTable({
+                "paging": true,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                "lengthMenu": [5, 10, 25, 50],
+                "columnDefs": [
+                    { "orderable": false, "targets": 6 }  // Không sắp xếp cột chức năng
+                ],
+                "language": {
+                    "lengthMenu": "Hiển thị _MENU_ mục",
+                    "zeroRecords": "Không tìm thấy dữ liệu",
+                    "info": "Hiển thị _START_ đến _END_ của _TOTAL_ mục",
+                    "infoEmpty": "Không có dữ liệu",
+                    "infoFiltered": "(lọc từ _MAX_ mục)",
+                    "search": "Tìm kiếm:",
+                    "paginate": {
+                        "first": "Đầu",
+                        "last": "Cuối",
+                        "next": "Tiếp",
+                        "previous": "Trước"
+                    }
+                }
+            });
+        });
+    </script>
+}

@@ -1,0 +1,195 @@
+html {
+  font-size: 14px;
+}
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    padding-top: 90px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main {
+    flex: 1; /* Phần main sẽ chiếm toàn bộ khoảng trống còn lại */
+    padding-bottom: 50px;
+}
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  background-color: #f8f9fa;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+  color: var(--bs-secondary-color);
+  text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+  text-align: start;
+}
+
+.navbar-brand {
+    font-weight: bold;
+    color: white !important;
+}
+
+.nav-link {
+    color: white !important;
+}
+
+.nav-link:hover {
+    color: black !important;
+}
+
+.footer {
+    background-color: #212529;
+    color: white;
+    padding: 20px 0;
+}
+
+.footer a {
+color: #adb5bd;
+text-decoration: none;
+}
+
+.footer a:hover {
+    color: white;
+}
+.img-hover-zoom:hover {
+    transform: scale(1.05);
+}
+
+.facility-card {
+    border-radius: 1rem;
+    transition: transform 0.3s ease-in-out;
+}
+
+    .facility-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+.hover-zoom:hover {
+    transform: scale(1.1);
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Thêm hiệu ứng cho các thẻ sân */
+.field-card {
+    transition: transform 0.3s ease-in-out;
+}
+
+    .field-card:hover {
+        transform: scale(1.05);
+    }
+
+/* Thêm hiệu ứng cho các thẻ đánh giá */
+.review-card {
+    transition: background-color 0.3s ease;
+}
+
+    .review-card:hover {
+        background-color: #f8f9fa;
+    }
+.payment-option {
+    transition: all 0.3s ease;
+}
+
+    .payment-option:hover {
+        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+
+    .payment-option input:checked + img {
+        border: 2px solid #198754;
+        border-radius: 10px;
+    }
+.rating {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+}
+
+.rating-input {
+    display: none;
+}
+
+.rating-star {
+    font-size: 2rem;
+    color: #d3d3d3;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.rating-input:checked ~ .rating-star {
+    color: #ffc107;
+}
+
+.rating-star:hover,
+.rating-star:hover ~ .rating-star {
+    color: #ffca28;
+}
+
+.rating-input:focus + .rating-star {
+    outline: none;
+    box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.5);
+}
+
+.rating-star[data-bs-toggle="tooltip"] {
+    cursor: pointer;
+}
+
+    .rating-star[data-bs-toggle="tooltip"]:hover {
+        color: #ffb300;
+    }
+.carousel {
+    width: 65%;
+    margin: auto;
+}
+.list-group-item.active {
+    background-color: #018032;
+    color: white;
+    font-weight: 500;
+}
+form .form-floating input:disabled {
+    background-color: #f8f9fa;
+    opacity: 1;
+}
+.list-group .nav-link {
+    padding: 0.75rem 1rem;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease-in-out;
+}
+
+    .list-group .nav-link:hover {
+        background-color: #018032;
+    }
+
+    .list-group .nav-link.active {
+        background-color: #018032;
+        color: #fff !important;
+    }
+button:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+.limited-select {
+    max-height: 180px;
+    overflow-y: auto;
+}

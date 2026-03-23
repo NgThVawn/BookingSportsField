@@ -1,0 +1,705 @@
+﻿@model IEnumerable<BookingSportsField.ViewModels.BookingHistoryViewModel>
+
+<div class="container mt-5 mb-5">
+    <!-- Header -->
+    <div class="mb-4">
+        <h2 class="text-center mb-3" style="color: #013b0f; font-weight: 600;">
+            <i class="bi bi-calendar-check"></i> LỊCH SỬ ĐẶT SÂN CỦA BẠN
+        </h2>
+        <p class="text-center text-muted">Quản lý và theo dõi tất cả các lượt đặt sân của bạn</p>
+    </div>
+
+    <!-- Status Tabs -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-success border-0">
+            <ul class="nav nav-tabs card-header-tabs" id="statusTabs" role="tablist" style="border-bottom: 2px solid;">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active fw-500" id="tab-all" data-bs-toggle="tab" data-bs-target="#pane-all" type="button" role="tab" aria-controls="pane-all" aria-selected="true" data-status="">
+                        <i class="bi bi-list"></i> Tất cả
+                        <span class="badge bg-teal ms-2" id="count-all">@Model.Count()</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link fw-500" id="tab-pending" data-bs-toggle="tab" data-bs-target="#pane-pending" type="button" role="tab" aria-controls="pane-pending" aria-selected="false" data-status="Pending">
+                        <i class="bi bi-hourglass-split"></i> Chờ xác nhận
+                        <span class="badge bg-teal ms-2" id="count-pending">@Model.Count(x => x.Status == "Pending")</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link fw-500" id="tab-confirmed" data-bs-toggle="tab" data-bs-target="#pane-confirmed" type="button" role="tab" aria-controls="pane-confirmed" aria-selected="false" data-status="Confirmed">
+                        <i class="bi bi-check-circle"></i> Đã xác nhận
+                        <span class="badge bg-teal ms-2" id="count-confirmed">@Model.Count(x => x.Status == "Confirmed")</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link fw-500" id="tab-completed" data-bs-toggle="tab" data-bs-target="#pane-completed" type="button" role="tab" aria-controls="pane-completed" aria-selected="false" data-status="Completed">
+                        <i class="bi bi-check2-all"></i> Đã hoàn thành
+                        <span class="badge bg-teal ms-2" id="count-completed">@Model.Count(x => x.Status == "Completed")</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link fw-500" id="tab-cancelled" data-bs-toggle="tab" data-bs-target="#pane-cancelled" type="button" role="tab" aria-controls="pane-cancelled" aria-selected="false" data-status="Cancelled">
+                        <i class="bi bi-x-circle"></i> Đã hủy
+                        <span class="badge bg-teal ms-2" id="count-cancelled">@Model.Count(x => x.Status == "Cancelled")</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link fw-500" id="tab-noshow" data-bs-toggle="tab" data-bs-target="#pane-noshow" type="button" role="tab" aria-controls="pane-noshow" aria-selected="false" data-status="NoShow">
+                        <i class="bi bi-exclamation-circle"></i> Không nhận sân
+                        <span class="badge bg-teal ms-2" id="count-noshow">@Model.Count(x => x.Status == "NoShow")</span>
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Search & Filter Bar -->
+        <div class="card-body border-bottom py-3">
+            <div class="row g-3 align-items-end">
+                <div class="col-12 col-md-8">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-0">
+                            <i class="bi bi-search text-muted"></i>
+                        </span>
+                        <input type="text" id="searchInput" class="form-control border-0 bg-light" placeholder="Tìm kiếm theo tên sân, cơ sở...">
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <button id="resetFiltersBtn" class="btn w-100" style="background-color: #013b0f; color: white; border: none;">
+                        <i class="bi bi-arrow-clockwise"></i> Đặt lại
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Content with Pagination -->
+        <div class="tab-content" id="bookingTabsContent">
+            @foreach (var statusValue in new[] { "", "Pending", "Confirmed", "Completed", "Cancelled", "NoShow" })
+            {
+                var statusTabId = statusValue == "" ? "all" : statusValue.ToLower();
+                var filteredBookings = statusValue == "" ? Model : Model.Where(x => x.Status == statusValue);
+
+                <div class="tab-pane fade" id="pane-@statusTabId" role="tabpanel" aria-labelledby="tab-@statusTabId">
+                    @if (!filteredBookings.Any())
+                    {
+                        <div class="card-body text-center py-5">
+                            <i class="bi bi-inbox text-muted" style="font-size: 48px; opacity: 0.5;"></i>
+                            <p class="text-muted mt-3">Không có lịch sử đặt sân trong danh mục này</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle booking-table mb-0" data-status="@statusValue">
+                                <thead style="background-color: #198754">
+                                    <tr>
+                                        <th style="width: 20%; color: white; font-weight: 600;">Sân - Cơ sở</th>
+                                        <th style="width: 15%; color: white; font-weight: 600;">Ngày đặt</th>
+                                        <th style="width: 15%; color: white; font-weight: 600;">Thời gian</th>
+                                        <th style="width: 15%; color: white; font-weight: 600;">Trạng thái</th>
+                                        <th style="width: 15%; color: white; font-weight: 600;">Tổng tiền</th>
+                                        <th class="text-center" style="width: 20%; color: white; font-weight: 600;">Chức năng</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="table-content">
+                                    @foreach (var booking in filteredBookings)
+                                    {
+                                        var displayName = booking.Status switch
+                                        {
+                                            "Pending" => "Chờ xác nhận",
+                                            "Confirmed" => "Đã xác nhận",
+                                            "Completed" => "Đã hoàn thành",
+                                            "Cancelled" => "Đã hủy",
+                                            "NoShow" => "Không nhận sân",
+                                            _ => booking.Status
+                                        };
+
+                                        var badgeClass = booking.Status switch
+                                        {
+                                            "Pending" => "bg-warning text-dark",
+                                            "Confirmed" => "bg-info",
+                                            "Completed" => "bg-success",
+                                            "Cancelled" => "bg-danger",
+                                            "NoShow" => "bg-danger",
+                                            _ => "bg-light text-dark"
+                                        };
+
+                                        var iconClass = booking.Status switch
+                                        {
+                                            "Pending" => "bi-hourglass-split",
+                                            "Confirmed" => "bi-check-circle",
+                                            "Completed" => "bi-check2-all",
+                                            "Cancelled" => "bi-x-circle",
+                                            "NoShow" => "bi-exclamation-circle",
+                                            _ => "bi-dash-circle"
+                                        };
+                                    <tr class="booking-row" data-booking-id="@booking.Id" data-sort-date="@booking.BookingDate.ToString("yyyy-MM-dd HH:mm:ss")">
+                                        <td>
+                                            <div class="fw-500">@booking.FieldName</div>
+                                            <small class="text-muted">@booking.FacilityName</small>
+                                        </td>
+                                        <td>
+                                            @booking.BookingDate.ToString("dd/MM/yyyy")
+                                        </td>
+                                        <td>
+                                            <small><i class="bi bi-clock"></i> @booking.StartTime.ToString(@"hh\:mm") - @booking.EndTime.ToString(@"hh\:mm")</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge @badgeClass">
+                                                <i class="bi @iconClass"></i> @displayName
+                                            </span>
+                                        </td>
+                                        <td class="fw-bold" style="color: #013b0f;">
+                                            @booking.TotalPrice.ToString("N0") VND
+                                        </td>
+                                        <td class="text-center">
+                                            <button type="button" class="btn btn-sm btn-outline-teal me-1" title="Xem chi tiết" onclick="openBookingModal('@booking.Id')">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            @if (booking.CanCancel)
+                                            {
+                                                <form method="post" action="@Url.Action("CancelBooking", "Home")" class="d-inline">
+                                                    <input type="hidden" name="bookingId" value="@booking.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-danger" title="Hủy đặt sân" onclick="return confirm('Bạn có chắc chắn muốn hủy lượt đặt sân này không?')">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            }
+                                            @if (booking.CanReview)
+                                            {
+                                                <a href="@Url.Action("Review", "Home", new { bookingId = booking.Id })" class="btn btn-sm btn-warning" title="Đánh giá">
+                                                    <i class="bi bi-star"></i>
+                                                </a>
+                                            }
+                                        </td>
+                                    </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <nav aria-label="Pagination" class="d-flex justify-content-center mt-4 mb-3">
+                            <ul class="pagination" id="pagination-@statusTabId">
+                                <!-- Pagination will be generated by JavaScript -->
+                            </ul>
+                        </nav>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Booking Detail Modal -->
+<div class="modal fade" id="bookingDetailModal" tabindex="-1" aria-labelledby="bookingDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-bottom" style="background-color: #f8f9fa;">
+                <h5 class="modal-title fw-600" id="bookingDetailModalLabel">
+                    <i class="bi bi-file-earmark-text"></i> Chi tiết đặt sân
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="bookingDetailContent">
+                <!-- Content will be loaded dynamically -->
+            </div>
+            <div class="modal-footer border-top">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        // Configuration
+        const ITEMS_PER_PAGE = 5;
+        const bookingsData = @Html.Raw(Json.Serialize(Model.Select(b => new {
+            b.Id,
+            b.FieldName,
+            b.FacilityName,
+            b.FieldTypeName,
+            b.BookingDate,
+            b.StartTime,
+            b.EndTime,
+            b.Status,
+            b.TotalPrice,
+            b.Notes
+        }).OrderByDescending(b => b.BookingDate)));
+
+        let currentTab = '';
+        let currentPage = {};
+        let filteredBookings = {};
+
+        $(document).ready(function () {
+            initializeEventListeners();
+            sortAndInitialize();
+            document.getElementById('pane-all').classList.add('show', 'active');
+            updateTabCounts();
+            // Show initial data for "all" tab
+            currentTab = '';
+            applyFilters();
+        });
+
+        function initializeEventListeners() {
+            // Tab switching
+            document.querySelectorAll('#statusTabs button').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    currentTab = this.getAttribute('data-status');
+                    currentPage[currentTab] = 1;
+                    applyFilters();
+                });
+            });
+
+            // Search
+            document.getElementById('searchInput').addEventListener('input', debounce(function () {
+                Object.keys(currentPage).forEach(tab => currentPage[tab] = 1);
+                applyFilters();
+            }, 300));
+
+            // Reset Filters
+            document.getElementById('resetFiltersBtn').addEventListener('click', function () {
+                document.getElementById('searchInput').value = '';
+                currentTab = '';
+                Object.keys(currentPage).forEach(tab => currentPage[tab] = 1);
+                document.getElementById('tab-all').click();
+                applyFilters();
+            });
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        function sortAndInitialize() {
+            // Initialize all tabs with sorted data
+            ['', 'Pending', 'Confirmed', 'Completed', 'Cancelled', 'NoShow'].forEach(status => {
+                const filtered = status === '' 
+                    ? bookingsData 
+                    : bookingsData.filter(b => b.status === status);
+                filteredBookings[status] = filtered;
+                currentPage[status] = 1;
+            });
+        }
+
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            // Filter by status (current tab)
+            let filtered = filteredBookings[currentTab] || [];
+
+            // Filter by search term
+            if (searchTerm) {
+                filtered = filtered.filter(b => 
+                    b.fieldName.toLowerCase().includes(searchTerm) ||
+                    b.facilityName.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            // Update table display with pagination
+            updateTableDisplay(filtered, currentTab);
+        }
+
+        function updateTableDisplay(data, status) {
+            const statusTabId = status === '' ? 'all' : status.toLowerCase();
+            
+            // Find the table for this status
+            const table = document.querySelector(`table[data-status="${status}"]`);
+            if (!table) {
+                addDebugInfo(`❌ No table found for: ${status}`);
+                console.log('Table not found for status:', status, 'selector:', `table[data-status="${status}"]`);
+                return;
+            }
+
+            const tbody = table.querySelector('tbody');
+            if (!tbody) {
+                addDebugInfo(`❌ No tbody found for: ${status}`);
+                console.log('Tbody not found in table for status:', status);
+                return;
+            }
+
+            const rowCount = tbody.querySelectorAll('tr').length;
+            console.log(`Table found with ${rowCount} rows for status: ${status}`);
+
+            // Reset all rows to display none first
+            const allRows = tbody.querySelectorAll('tr');
+            allRows.forEach(row => {
+                row.classList.add('d-none');
+                row.style.display = 'none';
+            });
+
+            // Show paginated rows
+            const startIndex = (currentPage[status] - 1) * ITEMS_PER_PAGE;
+            const endIndex = startIndex + ITEMS_PER_PAGE;
+            const paginatedData = data.slice(startIndex, endIndex);
+
+            console.log(`Showing ${paginatedData.length} out of ${data.length} rows`);
+
+            if (paginatedData.length > 0) {
+                paginatedData.forEach(booking => {
+                    // The JSON serializer uses camelCase, so access lowercase properties
+                    const bookingId = booking.id || booking.Id;  // Try both cases
+                    
+                    // Try multiple selector approaches
+                    let row = null;
+                    
+                    // Approach 1: Direct data attribute match
+                    row = tbody.querySelector(`tr[data-booking-id="${bookingId}"]`);
+                    
+                    if (!row) {
+                        // Approach 2: Search through all rows
+                        const allRowsArray = Array.from(tbody.querySelectorAll('tr'));
+                        row = allRowsArray.find(r => {
+                            const idAttr = r.getAttribute('data-booking-id');
+                            const id = parseInt(idAttr);
+                            return id === bookingId;
+                        });
+                    }
+                    
+                    if (row) {
+                        row.classList.remove('d-none');
+                        row.style.display = '';
+                    }
+                });
+            }
+
+            // Update pagination
+            createPagination(statusTabId, data.length);
+        }
+
+        function createPagination(statusTabId, totalItems) {
+            const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+            const paginationContainer = document.getElementById(`pagination-${statusTabId}`);
+            if (!paginationContainer) return;
+
+            paginationContainer.innerHTML = '';
+
+            if (totalPages <= 1) return;
+
+            // Previous button
+            const prevLi = document.createElement('li');
+            prevLi.className = `page-item ${currentPage[currentTab] === 1 ? 'disabled' : ''}`;
+            const prevLink = document.createElement('a');
+            prevLink.className = 'page-link';
+            prevLink.href = '#';
+            prevLink.textContent = '← Trước';
+            prevLink.onclick = (e) => {
+                e.preventDefault();
+                goToPage(currentTab, currentPage[currentTab] - 1);
+            };
+            prevLi.appendChild(prevLink);
+            paginationContainer.appendChild(prevLi);
+
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                const li = document.createElement('li');
+                li.className = `page-item ${currentPage[currentTab] === i ? 'active' : ''}`;
+                const link = document.createElement('a');
+                link.className = 'page-link';
+                link.href = '#';
+                link.textContent = i;
+                if (currentPage[currentTab] === i) {
+                    link.style.backgroundColor = '#01701b';
+                    link.style.borderColor = '#013b0f';
+                }
+                link.onclick = (e) => {
+                    e.preventDefault();
+                    goToPage(currentTab, i);
+                };
+                li.appendChild(link);
+                paginationContainer.appendChild(li);
+            }
+
+            // Next button
+            const nextLi = document.createElement('li');
+            nextLi.className = `page-item ${currentPage[currentTab] === totalPages ? 'disabled' : ''}`;
+            const nextLink = document.createElement('a');
+            nextLink.className = 'page-link';
+            nextLink.href = '#';
+            nextLink.textContent = 'Sau →';
+            nextLink.onclick = (e) => {
+                e.preventDefault();
+                goToPage(currentTab, currentPage[currentTab] + 1);
+            };
+            nextLi.appendChild(nextLink);
+            paginationContainer.appendChild(nextLi);
+        }
+
+        function goToPage(status, page) {
+            const statusKey = status === null || status === '' ? '' : status;
+            const totalItems = (statusKey === '' 
+                ? bookingsData 
+                : bookingsData.filter(b => b.status === statusKey)).length;
+            const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+
+            if (page < 1 || page > totalPages) return;
+
+            currentPage[statusKey] = page;
+            currentTab = statusKey;
+            applyFilters();
+        }
+
+        function updateTabCounts() {
+            const tabs = {
+                'all': null,
+                'pending': 'Pending',
+                'confirmed': 'Confirmed',
+                'completed': 'Completed',
+                'cancelled': 'Cancelled',
+                'noshow': 'NoShow'
+            };
+
+            Object.entries(tabs).forEach(([tabId, status]) => {
+                const count = status === null 
+                    ? bookingsData.length 
+                    : bookingsData.filter(b => b.status === status).length;
+                const badge = document.getElementById(`count-${tabId}`);
+                if (badge) badge.textContent = count;
+            });
+        }
+
+        function getStatusDisplay(status) {
+            const displays = {
+                'Pending': 'Chờ xác nhận',
+                'Confirmed': 'Đã xác nhận',
+                'Completed': 'Đã hoàn thành',
+                'Cancelled': 'Đã hủy',
+                'NoShow': 'Không nhận sân'
+            };
+            return displays[status] || status;
+        }
+
+        function getStatusBadgeClass(status) {
+            const classes = {
+                'Pending': 'bg-warning text-dark',
+                'Confirmed': 'bg-info',
+                'Completed': 'bg-success',
+                'Cancelled': 'bg-danger',
+                'NoShow': 'bg-danger'
+            };
+            return classes[status] || 'bg-light text-dark';
+        }
+
+        function getStatusIcon(status) {
+            const icons = {
+                'Pending': 'bi-hourglass-split',
+                'Confirmed': 'bi-check-circle',
+                'Completed': 'bi-check2-all',
+                'Cancelled': 'bi-x-circle',
+                'NoShow': 'bi-exclamation-circle'
+            };
+            return icons[status] || 'bi-dash-circle';
+        }
+
+        function openBookingModal(bookingId) {
+            const booking = bookingsData.find(b => String(b.id) === String(bookingId));
+            if (!booking) return;
+
+            // Format data
+            const bookingDate = new Date(booking.bookingDate).toLocaleDateString('vi-VN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+
+            const startTimeStr = booking.startTime;
+            const endTimeStr = booking.endTime;
+
+            const statusDisplay = getStatusDisplay(booking.status);
+            const badgeClass = getStatusBadgeClass(booking.status);
+            const icon = getStatusIcon(booking.status);
+
+            // Optional: set modal title
+            const titleEl = document.getElementById('bookingDetailModalLabel');
+            if (titleEl) titleEl.textContent = `Chi tiết đặt sân #${booking.id}`;
+
+            const content = `
+                <div class="booking-details">
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <h6 class="text-muted text-uppercase mb-2" style="font-size: 0.75rem; letter-spacing: 0.5px;">
+                                <i class="bi bi-building"></i> Cơ sở & Sân
+                            </h6>
+                            <div class="mb-3">
+                                <p class="mb-1"><strong>${booking.facilityName}</strong></p>
+                                <p class="text-muted mb-0"><i class="bi bi-geo-alt"></i> ${booking.fieldName}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <h6 class="text-muted text-uppercase mb-2" style="font-size: 0.75rem; letter-spacing: 0.5px;">
+                                Trạng thái
+                            </h6>
+                            <span class="badge ${badgeClass}" style="font-size: 0.95rem; padding: 0.5rem 0.75rem;">
+                                <i class="bi ${icon}"></i> ${statusDisplay}
+                            </span>
+                        </div>
+                    </div>
+
+                    <hr class="my-3" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted text-uppercase mb-2" style="font-size: 0.75rem; letter-spacing: 0.5px;">
+                                <i class="bi bi-calendar-event"></i> Ngày đặt
+                            </h6>
+                            <p class="mb-3"><strong>${bookingDate}</strong></p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted text-uppercase mb-2" style="font-size: 0.75rem; letter-spacing: 0.5px;">
+                                <i class="bi bi-clock"></i> Thời gian
+                            </h6>
+                            <p class="mb-3"><strong>${startTimeStr} - ${endTimeStr}</strong></p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted text-uppercase mb-2" style="font-size: 0.75rem; letter-spacing: 0.5px;">
+                                <i class="bi bi-tag"></i> Loại sân
+                            </h6>
+                            <p class="mb-3"><strong>${booking.fieldTypeName || 'N/A'}</strong></p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted text-uppercase mb-2" style="font-size: 0.75rem; letter-spacing: 0.5px;">
+                                <i class="bi bi-credit-card"></i> Tổng tiền
+                            </h6>
+                            <p class="mb-3"><strong style="color: #013b0f; font-size: 1.1rem;">${new Intl.NumberFormat('vi-VN').format(booking.totalPrice)} VND</strong></p>
+                        </div>
+                    </div>
+
+                    <hr class="my-3" />
+
+                    <h6 class="text-muted text-uppercase mb-2" style="font-size: 0.75rem; letter-spacing: 0.5px;">
+                        <i class="bi bi-info-circle"></i> Ghi chú
+                    </h6>
+                    <p class="text-muted text-small mb-0">${booking.notes || 'Không có ghi chú'}</p>
+                </div>
+            `;
+
+            document.getElementById('bookingDetailContent').innerHTML = content;
+            const modal = new bootstrap.Modal(document.getElementById('bookingDetailModal'));
+            modal.show();
+        }
+    </script>
+}
+
+@section Styles {
+    <style>
+        .bg-teal {
+            background-color: #1abc9c !important;
+        }
+
+        .btn-outline-teal {
+            color: #013b0f;
+            border-color: #013b0f;
+        }
+
+        .btn-outline-teal:hover {
+            background-color: #013b0f;
+            border-color: #013b0f;
+            color: white;
+        }
+
+        .nav-tabs .nav-link {
+            color: white;
+            border: none;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tabs .nav-link:hover {
+            color: white;
+            border-bottom-color: white;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: white;
+            background-color: transparent;
+            border-bottom-color: white;
+            font-weight: 600;
+        }
+
+        .booking-table tbody tr {
+            transition: background-color 0.2s ease;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .booking-table tbody tr:hover {
+            background-color: #f8fffe;
+        }
+
+        /* Enforce table header background + text color across all booking tables */
+        .booking-table thead,
+        .booking-table thead tr,
+        .booking-table thead th {
+            background-color: #198754 !important;
+            color: #ffffff !important;
+        }
+
+        .badge {
+            font-weight: 500;
+        }
+
+        .modal-header {
+            background-color: #f8f9fa;
+        }
+
+        .booking-details h6 {
+            font-weight: 600;
+            color: #6c757d;
+        }
+
+        .booking-details strong {
+            color: #212529;
+        }
+
+        .pagination .page-link {
+            color: #013b0f;
+            border-color: #dee2e6;
+        }
+
+        .pagination .page-link:hover {
+            color: white;
+            background-color: #01701b;
+            border-color: #013b0f;
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: #01701b;
+            border-color: #013b0f;
+        }
+
+        .pagination .page-item.disabled .page-link {
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        @@media (max-width: 768px) {
+            .nav-tabs {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .nav-tabs .nav-link {
+                white-space: nowrap;
+                font-size: 0.9rem;
+            }
+
+            .badge {
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+}
